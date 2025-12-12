@@ -60,58 +60,6 @@ class LoggableAction
     }
 
     /**
-     * Attach logging to an existing Action (for example EditAction::make()).
-     *
-     * Usage:
-     * LoggableAction::attachTo($editAction, 'edit.user');
-     */
-    public static function attachTo(Action $action, string $name = 'filament.action'): Action
-    {
-        try {
-            $action->after(function (...$args) use ($name) {
-                // Filament may inject different parameters; try to resolve record and data
-                $record = null;
-                $data = null;
-
-                foreach ($args as $arg) {
-                    if (is_object($arg) && method_exists($arg, 'getKey')) {
-                        $record = $arg;
-
-                        continue;
-                    }
-
-                    if (is_array($arg)) {
-                        $data = $arg;
-
-                        continue;
-                    }
-                }
-
-                try {
-                    AccessLog::create([
-                        'user_id' => optional(auth()->user())->id,
-                        'endpoint' => is_string($name) ? $name : 'filament.action',
-                        'method' => 'POST',
-                        'model_type' => is_object($record) ? get_class($record) : null,
-                        'model_id' => $record?->getKey() ?? null,
-                        'ip_address' => request()?->ip(),
-                        'user_agent' => request()?->userAgent(),
-                        'request_payload' => filled($data) ? json_encode($data) : null,
-                        'response_status' => 200,
-                        'accessed_at' => now(),
-                    ]);
-                } catch (\Throwable $e) {
-                    // don't fail the action when logging fails
-                }
-            });
-        } catch (\Throwable $e) {
-            // If Action doesn't support ->after() or something goes wrong, ignore
-        }
-
-        return $action;
-    }
-
-    /**
      * Convenience method to log an create directly from your own callback.
      */
     public static function logCreate(mixed $record, mixed $data = null, string $name = 'filament.create'): void

@@ -15,8 +15,8 @@ class ListKatagoris extends ListRecords
     {
         return [
             CreateAction::make()
-                ->after(function ($record) {
-                    LoggableAction::logCreate($record, 'filament.action.categorie.create');
+                ->after(function ($record, $data) {
+                    LoggableAction::logCreate($record, $data, 'filament.action.categorie.create');
                 }),
         ];
     }

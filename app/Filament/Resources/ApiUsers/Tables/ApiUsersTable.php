@@ -54,7 +54,11 @@ class ApiUsersTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->after(function ($records) {
+                            // Log the bulk delete action to api_access_logs
+                            LoggableAction::logBulkDelete($records, 'filament.action.api_user.delete');
+                        }),
                 ]),
             ]);
     }

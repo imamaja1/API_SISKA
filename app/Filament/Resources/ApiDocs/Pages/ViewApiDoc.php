@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\ApiDocs\Pages;
 
 use App\Filament\Resources\ApiDocs\ApiDocResource;
-use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewApiDoc extends ViewRecord
@@ -13,7 +12,6 @@ class ViewApiDoc extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
         ];
     }
 }

@@ -28,12 +28,10 @@ class KatagorisTable
             ->recordActions([
                 EditAction::make()
                     ->after(function ($record, $data = null) {
-                        // Log the edit action to api_access_logs
                         LoggableAction::logEdit($record, $data, 'filament.action.categorie.edit');
                     }),
                 DeleteAction::make()
                     ->after(function ($record) {
-                        // Log the delete action to api_access_logs
                         LoggableAction::logDelete($record, 'filament.action.categorie.delete');
                     }),
             ])
@@ -41,7 +39,6 @@ class KatagorisTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->after(function ($records) {
-                            // Log bulk delete action: create one log entry per deleted record
                             LoggableAction::logBulkDelete($records, 'filament.action.categorie.delete');
                         }),
                 ]),
