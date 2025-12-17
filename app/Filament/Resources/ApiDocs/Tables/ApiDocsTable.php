@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\ApiDocs\Tables;
 
 use App\Filament\Actions\LoggableAction;
+use App\Models\Category;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class ApiDocsTable
@@ -30,16 +32,19 @@ class ApiDocsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('category_id')
+                    ->label('Category')
+                    ->options(Category::pluck('name', 'id'))
+                    ->searchable(),
             ])
             ->recordActions([
-                ViewAction::make()
-                    ->after(function ($record) {
-                        LoggableAction::logView($record, 'filament.action.apidoc.view');
-                    }),
                 EditAction::make()
                     ->after(function ($record, $data = null) {
                         LoggableAction::logEdit($record, $data, 'filament.action.apidoc.edit');
+                    }),
+                DeleteAction::make()
+                    ->after(function ($record) {
+                        LoggableAction::logDelete($record, 'filament.action.apidoc.delete');
                     }),
             ])
             ->toolbarActions([

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class Category extends Model
 {
@@ -14,18 +13,8 @@ class Category extends Model
 
     protected $fillable = [
         'name',
-        'slug',
         'description',
     ];
-
-    protected static function booted()
-    {
-        static::creating(function ($model) {
-            if (empty($model->slug)) {
-                $model->slug = Str::slug($model->name);
-            }
-        });
-    }
 
     public function apiDocs()
     {

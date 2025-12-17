@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('access_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('super_admin')->nullOnDelete();
 
             $table->string('endpoint');
             $table->string('method', 10);

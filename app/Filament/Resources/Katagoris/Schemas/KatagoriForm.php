@@ -16,6 +16,7 @@ class KatagoriForm
                     ->label('Kategori Name')
                     ->required()
                     ->unique(ignoreRecord: true)
+                    ->reactive()
                     ->columnSpanFull()
                     ->maxLength(255),
                 TextArea::make('description')
