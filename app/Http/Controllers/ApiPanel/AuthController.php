@@ -20,6 +20,8 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        
+
         if (Auth::guard('api_users_web')->attempt($credentials)) {
             $request->session()->regenerate();
 
