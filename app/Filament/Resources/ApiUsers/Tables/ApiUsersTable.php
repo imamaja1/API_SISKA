@@ -28,6 +28,14 @@ class ApiUsersTable
                         'active' => 'success',
                     })
                     ->searchable(),
+                TextColumn::make('role')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'admin' => 'danger',
+                        'pdpt' => 'danger',
+                        'prodi' => 'info',
+                        'akademik' => 'warning'
+                    }),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -35,6 +35,15 @@ class ApiUserForm
                             })
                     )
                     ->helperText('Klik ikon untuk generate password otomatis.'),
+                Select::make('role')
+                    ->required()
+                    ->options([
+                        'admin' => 'Admin',
+                        'pdpt' => 'PDPT',
+                        'prodi' => 'Prodi',
+                        'akademik' => 'Akademik',
+                    ])
+                    ->default('admin'),
                 Select::make('status')
                     ->required()
                     ->options([

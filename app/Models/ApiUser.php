@@ -26,6 +26,7 @@ class ApiUser extends Authenticatable
         'email',
         'password',
         'status',
+        'role'
     ];
 
     /**

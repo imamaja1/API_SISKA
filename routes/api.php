@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\ApiAuthController;
+use App\Http\Controllers\Api\MahasiswaController;
+use App\Http\Controllers\Api\ProgramStudiController;
 use App\Http\Controllers\Api\TahunAkademikController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +13,14 @@ Route::prefix('v1')->group(function () {
         Route::get('me', [ApiAuthController::class, 'me']);
         Route::post('logout', [ApiAuthController::class, 'logout']);
         Route::post('logout-all', [ApiAuthController::class, 'logoutAll']);
+
+        # Mahasiswa
+        Route::get('mahasiswa', [MahasiswaController::class, 'index']);
+        Route::get('mahasiswa/{nim}', [MahasiswaController::class, 'show']);
+
+        # Program Studi
+        Route::get('program-studi', [ProgramStudiController::class, 'index']);
+        Route::get('program-studi/{kode_program_studi}', [ProgramStudiController::class, 'show']);
 
         # Tahun Akademik
         Route::get('tahun-akademik', [TahunAkademikController::class, 'GetTahunAkademik']);
