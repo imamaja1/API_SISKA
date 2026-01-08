@@ -31,6 +31,5 @@ Route::prefix('v1')->group(function () {
         Route::delete('tahun-akademik/{id}/delete', [TahunAkademikController::class, 'DeleteTahunAkademik']);
         Route::patch('tahun-akademik/{id}/status', [TahunAkademikController::class, 'UpdateStatusTahunAkademik']);
 
-        
     });
 });
