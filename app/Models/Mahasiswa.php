@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Sanctum\HasApiTokens;
 
 class Mahasiswa extends Model
 {
+    use HasApiTokens;
+    
     protected $table = 'mahasiswa';
 
     protected $primaryKey = 'nim';
