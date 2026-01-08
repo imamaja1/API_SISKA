@@ -96,4 +96,65 @@ class MahasiswaController extends Controller
 			'Mahasiswa retrieved successfully'
 		);
 	}
+
+	public function GetMhs(Request $request): JsonResponse
+	{
+		$validator = Validator::make($request->query(), [
+			'program_studi_kode' => 'sometimes|integer',
+			'status' => 'sometimes|in:A,N',
+            'angkatan' => 'sometimes|string|max:4',
+			'nama_program_studi' => 'sometimes|string|max:100',
+		]);
+		if ($validator->fails()) {
+			return $this->error('Validation Error', 422, $validator->errors()->toArray());
+		}
+		$programStudiKode = $request->query('program_studi_kode');
+		$status = $request->query('status');
+		$angkatan = $request->query('angkatan');
+		$namaProgramStudi = $request->query('nama_program_studi');
+
+		$query = Mahasiswa::query()
+			->with('nama_prodi')
+			->select("nim", "nama_mahasiswa","program_studi_kode", "status");
+		if ($programStudiKode !== null && $programStudiKode !== '') {
+			$query->where('program_studi_kode', (int) $programStudiKode);
+		}
+		if ($status !== null && $status !== '') {
+			$query->where('status', $status);
+		}
+		if($namaProgramStudi !== null && $namaProgramStudi !== ''){
+			$query->whereHas('nama_prodi', function ($q) use ($namaProgramStudi) {
+				$q->where('nama_program_studi', 'like', $namaProgramStudi . '%');
+			});
+		}
+		if ($request->has('angkatan') && $request->query('angkatan') !== '') {
+			$angkatan = substr($request->query('angkatan'), 2, 2);
+			$query->where('nim', 'like', $angkatan . '%');
+		}
+		$data = $query
+			->orderByDesc('nim')
+			->get();
+		return $this->success(
+			['data' => $data],
+			'Data Mahasiswa retrieved successfully'
+		);
+	}
+	public function ShowMhs(Request $request): JsonResponse
+	{
+		$validator = Validator::make($request->all(), [
+			'nim' => 'required|string|max:11',
+		]);
+		if ($validator->fails()) {
+			return $this->error('Validation Error', 422, $validator->errors()->toArray());
+		}
+		$nim = $request->input('nim');
+		$mahasiswa = Mahasiswa::query()->where('nim', $nim)->first();
+		if ($mahasiswa === null) {
+			return $this->error('Mahasiswa not found', 404);
+		}
+		return $this->success(
+			['data' => $mahasiswa],
+			'Mahasiswa retrieved successfully'
+		);
+	}
 }

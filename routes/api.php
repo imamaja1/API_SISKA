@@ -17,10 +17,11 @@ Route::prefix('v1')->group(function () {
         # Mahasiswa
         Route::get('mahasiswa', [MahasiswaController::class, 'index']);
         Route::get('mahasiswa/{nim}', [MahasiswaController::class, 'show']);
+        Route::get('mahasiswa-get', [MahasiswaController::class, 'GetMhs']);
+        Route::post('mahasiswa-show', [MahasiswaController::class, 'ShowMhs']);
 
-        # Program Studi
-        Route::get('program-studi', [ProgramStudiController::class, 'index']);
-        Route::get('program-studi/{kode_program_studi}', [ProgramStudiController::class, 'show']);
+        # program studi (api)
+        Route::get('program-studi', [ProgramStudiController::class, 'GetProgramStudi']);
 
         # Tahun Akademik
         Route::get('tahun-akademik', [TahunAkademikController::class, 'GetTahunAkademik']);

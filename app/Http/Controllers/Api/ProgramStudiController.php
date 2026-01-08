@@ -45,4 +45,18 @@ class ProgramStudiController extends Controller
             'Program Studi retrieved successfully'
         );
     }
+
+    public function GetProgramStudi(): JsonResponse
+    {
+        $programStudi = ProgramStudi::select(
+                            'kode_program_studi',
+                            'nama_program_studi',
+                            'singkatan_program_studi'
+                        )->get();
+
+        return $this->success(
+            ['data' => $programStudi],
+            'List of Program Studi retrieved successfully'
+        );
+    }
 }

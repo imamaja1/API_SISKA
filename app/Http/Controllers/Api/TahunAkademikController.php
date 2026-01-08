@@ -9,6 +9,7 @@ use App\Models\TahunAkademik;
 use App\Http\Controllers\Api\Traits\ApiResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 
@@ -18,14 +19,12 @@ class TahunAkademikController extends Controller
 
     public function GetTahunAkademik(Request $request): JsonResponse
     {
-        $data = TahunAkademik::all()->select(
-            'kode_tahun_akademik',
+        $data = TahunAkademik::select(
             'tahun_akademik',
+            DB::raw('SUBSTRING(tahun_akademik, 1, 4) as periode'),
             'semester',
-            'tanggal_mulai',
-            'tanggal_berakhir',
             'status'
-        );
+        )->orderByDesc('kode_tahun_akademik')->get();
         return $this->success(['data' => $data], 'Data Tahun Akademik retrieved successfully');
     }
     public function CreateTahunAkademik(Request $request): JsonResponse
