@@ -18,15 +18,15 @@
         </div>
 
         @if ($errors->any())
-            <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
+        <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
         @endif
 
         <form method="POST" action="{{ route('api_user.login.submit') }}">
             @csrf
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input id="email" type="email" name="email" class="form-control" value="{{ old('email') }}"
-                    required autofocus />
+                <input id="email" type="email" name="email" class="form-control" value="{{ old('email') }}" required
+                    autofocus />
             </div>
 
             <div class="mb-3">
