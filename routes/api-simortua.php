@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\KRSController;
 use App\Http\Controllers\Api\MahasiswaController;
 use App\Http\Controllers\Api\Pembayaran;
 use App\Http\Controllers\Simortua\AuthController;
@@ -11,5 +12,7 @@ Route::prefix('api/v1/simortua')->group(function () {
     Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('mahasiswa', [MahasiswaController::class, 'ShowMhs']);
         Route::get('pembayaran', [Pembayaran::class, 'CheckPembayaran']);
+        Route::get('krs', [KRSController::class, 'CekKRS']);
+        Route::get('krs/detail', [KRSController::class, 'ShowKrs']);
     });
 });

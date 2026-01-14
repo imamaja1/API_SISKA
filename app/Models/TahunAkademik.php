@@ -138,4 +138,10 @@ class TahunAkademik extends Model
         return $this->hasOne(StatusPerkuliahan::class, 'kode_tahun_akademik', 'kode_tahun_akademik')
             ->select('kode_tahun_akademik', 'semester', 'status_perkuliahan', 'pembayaran_spp', 'pembayaran_sks', 'pembayaran_lab', 'nim');
     }
+
+    // cekkrs
+    public function CekKRS()
+    {
+        return $this->hasMany(KRS::class, 'kode_tahun_akademik', 'kode_tahun_akademik');
+    }
 }
