@@ -132,4 +132,10 @@ class TahunAkademik extends Model
     {
         return $this->semester === '1' ? 'Ganjil' : 'Genap';
     }
+
+    public function statusPerkuliahan()
+    {
+        return $this->hasOne(StatusPerkuliahan::class, 'kode_tahun_akademik', 'kode_tahun_akademik')
+            ->select('kode_tahun_akademik', 'semester', 'status_perkuliahan', 'pembayaran_spp', 'pembayaran_sks', 'pembayaran_lab', 'nim');
+    }
 }
