@@ -14,7 +14,7 @@ class PetikanNilai extends Controller
 {
     use ApiResponse;
 
-    public function GetPentikanNilai(Request $request): JsonResponse
+    public function GetPetikanNilai(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'nim' => 'required|string|max:11',

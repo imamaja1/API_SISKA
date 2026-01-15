@@ -33,7 +33,7 @@ class Kurikulum
 
         return [
             'info_kurikulum' => $data,
-            'kurikulum' => $kurikulum,
+            'nilai_kurikulum' => $kurikulum,
         ];
     }
 }

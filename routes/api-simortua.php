@@ -18,6 +18,6 @@ Route::prefix('api/v1/simortua')->group(function () {
         Route::get('krs/detail', [KRSController::class, 'ShowKrs']);
         Route::get('khs', [KHSController::class, 'CekKHS']);
         Route::get('khs/detail', [KHSController::class, 'ShowKhs']);
-        Route::get('pentikan-nilai', [PetikanNilai::class, 'GetPentikanNilai']);
+        Route::get('petikan-nilai', [PetikanNilai::class, 'GetPetikanNilai']);
     });
 });
