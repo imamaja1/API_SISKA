@@ -140,7 +140,12 @@ class TahunAkademik extends Model
     }
 
     // cekkrs
-    public function CekKRS()
+    public function CekKrs()
+    {
+        return $this->hasMany(KRS::class, 'kode_tahun_akademik', 'kode_tahun_akademik');
+    }
+
+    public function CekKhs()
     {
         return $this->hasMany(KRS::class, 'kode_tahun_akademik', 'kode_tahun_akademik');
     }

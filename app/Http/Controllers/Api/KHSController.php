@@ -11,11 +11,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class KRSController extends Controller
+class KHSController extends Controller
 {
     use ApiResponse;
 
-    public function CekKRS(Request $request): JsonResponse
+    public function CekKHS(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'nim' => 'required|string|max:11',
@@ -29,7 +29,7 @@ class KRSController extends Controller
             'semester',
             'kode_tahun_akademik',
         )
-            ->with(['CekKrs' => function ($query) use ($nim) {
+            ->with(['CekKhs' => function ($query) use ($nim) {
                 $query->where('nim', $nim);
             }])
             ->where(
@@ -45,7 +45,7 @@ class KRSController extends Controller
         );
     }
 
-    public function ShowKrs(Request $request)
+    public function ShowKhs(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'kode_krs' => 'required|string|max:11',
@@ -54,12 +54,21 @@ class KRSController extends Controller
         if ($validator->fails()) {
             return $this->error('Validation Error', 422, $validator->errors()->toArray());
         }
+        $kode_sistem_penilaian = 1;
         $data = KRSDetail::select(
-            'status',
-            'id_matakuliah',
+            'krs_detail.id_matakuliah',
+            'khs_detail.nilai_akhir',
+            'spd.grade as grade',
+            'spd.bobot_nilai as bobot'
         )
+            ->join('khs_detail', 'khs_detail.kode_krs_detail', '=', 'krs_detail.kode_krs_detail')
+            ->join('sistem_penilaian_detail as spd', function ($join) use ($kode_sistem_penilaian) {
+                $join->on('khs_detail.nilai_akhir', '>=', 'spd.nilai_minimum')
+                    ->on('khs_detail.nilai_akhir', '<=', 'spd.nilai_maksimum')
+                    ->where('spd.kode_sistem_penilaian', '=', $kode_sistem_penilaian);
+            })
             ->with('matakuliah')
-            ->where('kode_krs', $kode_krs)
+            ->where('krs_detail.kode_krs', $kode_krs)
             ->get();
 
         return $this->success(
