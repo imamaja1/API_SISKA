@@ -21,7 +21,10 @@ class Kurikulum
             ->where('kode_program_studi', $prodiKode)
             ->firstOrFail();
 
-        $kurikulum = KurikulumModel::select('id_matakuliah')
+        $kurikulum = KurikulumModel::select(
+            'id_matakuliah',
+            'semester',
+        )
             ->with([
                 'matakuliah',
                 'nilai' => function ($query) use ($nim) {
@@ -29,6 +32,7 @@ class Kurikulum
                 },
             ])
             ->where('kode_nama_kurikulum', $data->kode_nama_kurikulum)
+            ->orderBy('semester', 'asc')
             ->get();
 
         return [

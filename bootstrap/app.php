@@ -12,7 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function (): void {
-           Route::group([], base_path('routes/api-simortua.php'));
+            Route::group([], base_path('routes/api-simortua.php'));
+            Route::group([], base_path('routes/api-obe.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
