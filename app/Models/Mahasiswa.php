@@ -9,7 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 class Mahasiswa extends Model
 {
     use HasApiTokens;
-    
+
     protected $table = 'mahasiswa';
 
     protected $primaryKey = 'nim';

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * Class Dosen
@@ -17,6 +18,8 @@ use Illuminate\Support\Str;
  */
 class Dosen extends Model
 {
+    use HasApiTokens;
+
     /** @var string */
     protected $table = 'dosen';
 
@@ -190,5 +193,10 @@ class Dosen extends Model
         ];
 
         return new self(array_merge($defaults, $attributes));
+    }
+
+    public function nama_prodi(): HasOne
+    {
+        return $this->hasOne(ProgramStudi::class, 'kode_program_studi', 'homebase');
     }
 }

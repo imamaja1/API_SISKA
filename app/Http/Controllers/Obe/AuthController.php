@@ -18,21 +18,58 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
         $email = $validasi['email'];
-        $data = Dosen::where('alamat_email', $email)->first();
+        $data = Dosen::select(
+            'kode_dosen',
+            'nama_dosen',
+            'alamat_email',
+            'sandi_pengguna',
+            'status_login',
+        )
+            ->where('alamat_email', $email)
+            ->where('sandi_pengguna', md5($validasi['password']))->first();
         if (! $data) {
-            return $this->errorResponse(message: 'Dosen tidak ditemukan', status: 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Email atau Password Tidak Valid',
+            ], 401);
         }
-        if (! password_verify($validasi['password'], $data->sandi_pengguna)) {
-            return $this->errorResponse(message: 'Email atau Password Tidak Valid', status: 401);
+        if (md5($validasi['password']) !== $data->sandi_pengguna) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Email atau Password Tidak Valid',
+            ], 401);
         }
 
         $data->tokens()->delete();
         $token = $data->createToken('api-token', ['*'])->plainTextToken;
 
-        return $this->success([
-            'user' => $data,
+        return response()->json([
+            'status' => true,
             'token' => $token,
-        ], 'Login successful');
+        ], 200);
+    }
+
+    public function me(Request $request)
+    {
+        $dosen = $request->user()->select(
+            'kode_dosen',
+            'nama_dosen',
+            'field_studi',
+            'alumni',
+            'nik',
+            'no_telp',
+            'status_dosen',
+            'program_studi.nama_program_studi',
+            'alamat_email',
+            'status_login',
+        )
+            ->join('program_studi', 'dosen.homebase', '=', 'program_studi.kode_program_studi', 'left')
+            ->first();
+
+        return response()->json([
+            'status' => true,
+            'data' => $dosen,
+        ], 200);
     }
 
     public function logout(Request $request)
