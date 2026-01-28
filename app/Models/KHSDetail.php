@@ -17,6 +17,11 @@ class KHSDetail extends Model
 
     public $timestamps = false;
 
+    protected $hidden = [
+        'kode_khs_detail',
+        'kode_krs_detail',
+    ];
+
     protected $fillable = [
         'kode_krs_detail',
         'nilai_harian',

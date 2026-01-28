@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Obe\PenilaianObeController;
 use App\Http\Controllers\Obe\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -8,5 +9,7 @@ Route::prefix('api/v1/obe')->group(function () {
     Route::group(['middleware' => ['auth:sanctum', 'dosen']], function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('kelas', [PenilaianObeController::class, 'kelas']);
+        Route::get('penilaian', [PenilaianObeController::class, 'penilaian']);
     });
 });

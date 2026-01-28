@@ -33,6 +33,10 @@ class KRSDetail extends Model
         'id_matakuliah' => 'integer',
     ];
 
+    protected $hidden = [
+        'kode_krs_detail',
+    ];
+
     public function krs(): BelongsTo
     {
         return $this->belongsTo(KRS::class, 'kode_krs', 'kode_krs');

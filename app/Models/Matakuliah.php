@@ -45,6 +45,10 @@ class Matakuliah extends Model
         'block',
     ];
 
+    protected $hidden = [
+        'id_matakuliah',
+    ];
+
     public function programStudi()
     {
         return $this->belongsTo(ProgramStudi::class, 'kode_program_studi', 'kode_program_studi');
