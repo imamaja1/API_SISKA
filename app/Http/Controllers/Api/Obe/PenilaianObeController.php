@@ -89,8 +89,20 @@ class PenilaianObeController extends Controller
         ]);
         $kode_kelas = Crypt::decryptString($request->code_kelas);
 
-        $data = KelasMahasiswa::select('*')
-            ->with('mahasiswa', 'matakuliah', 'nilai')
+        $data = KelasMahasiswa::select(
+            'khs_detail.kode_khs_detail as id',
+            'mahasiswa.nim',
+            'mahasiswa.nama_mahasiswa',
+            'khs_detail.nilai_harian',
+            'khs_detail.nilai_uts',
+            'khs_detail.nilai_uas',
+            'khs_detail.nilai_akhir',
+        )
+            ->join('krs_detail', 'kelas_mahasiswa.kode_krs_detail', '=', 'krs_detail.kode_krs_detail')
+            ->join('khs_detail', 'krs_detail.kode_krs_detail', '=', 'khs_detail.kode_krs_detail')
+            ->join('krs', 'krs_detail.kode_krs', '=', 'krs.kode_krs')
+            ->join('mahasiswa', 'krs.nim', '=', 'mahasiswa.nim')
+            ->limit(60)
             ->where('kelas_id', $kode_kelas)->get();
 
         return response()->json([
