@@ -68,7 +68,7 @@ class PenilaianObeController extends Controller
                 'matakuliah.id_matakuliah',
                 'matakuliah.nama_matakuliah'
             )
-            ->having('jumlah_mahasiswa', '>', 0) // 👈 minimal 1 mahasiswa
+            ->having('jumlah_mahasiswa', '>', 0)
             ->get()
             ->map(function ($item) {
                 $item->code_kelas = Crypt::encryptString($item->code_kelas);
