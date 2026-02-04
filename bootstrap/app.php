@@ -12,11 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function (): void {
-            Route::group([], base_path('routes/api-simortua.php'));
-            Route::group([], base_path('routes/api-obe.php'));
+            Route::middleware('api')->group(base_path('routes/api-simortua.php'));
+            Route::middleware('api')->group(base_path('routes/api-obe.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Enable Sanctum SPA cookie auth for stateful domains (session + CSRF on API routes).
+        $middleware->statefulApi();
+
         $middleware->alias([
             'dosen' => \App\Http\Middleware\EnsureDosenToken::class,
         ]);

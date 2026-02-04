@@ -15,4 +15,6 @@ Route::post('api-panel/logout', [AuthController::class, 'logout'])->name('api_us
 
 Route::middleware([EnsureApiUserAuthenticated::class])->prefix('api-panel')->group(function () {
     Route::get('/', [PanelController::class, 'index'])->name('api_panel.home');
+    // OBE auth tester page (browser-based Sanctum cookie auth)
+    Route::view('obe-test', 'obe_test')->name('obe_test');
 });

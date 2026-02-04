@@ -1,3 +1,3 @@
-1. laravel
-2. mengunakan telwin 
-3. 
+Dokumentasi auth API OBE (Sanctum SPA Cookie) ada di:
+
+- API_AUTH_OBE_COOKIE_SANCTUM.md

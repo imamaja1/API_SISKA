@@ -5,11 +5,13 @@ use App\Http\Controllers\Obe\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/obe')->group(function () {
+    // Login can be stateful (Sanctum SPA cookie/session) or stateless (Bearer token).
     Route::post('login', [AuthController::class, 'login']);
-    Route::group(['middleware' => ['auth:sanctum', 'dosen']], function () {
-        Route::get('me', [AuthController::class, 'me']);
+    // Protected endpoints: accept either Sanctum session (SPA cookie) or Bearer token.
+    Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('me', [AuthController::class, 'me']);
         Route::get('kelas', [PenilaianObeController::class, 'kelas']);
-        Route::get('penilaian', [PenilaianObeController::class, 'penilaian']);
+        Route::post('penilaian', [PenilaianObeController::class, 'penilaian']);
     });
 });

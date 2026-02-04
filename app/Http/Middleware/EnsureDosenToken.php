@@ -14,6 +14,17 @@ class EnsureDosenToken
      */
     public function handle(Request $request, Closure $next)
     {
+        // Preferred: Sanctum SPA cookie (session) authenticated user.
+        $user = $request->user();
+        if ($user instanceof Dosen) {
+            $request->attributes->set('dosen', $user);
+            $request->attributes->set('kode_dosen', $user->getKey());
+            $request->setUserResolver(fn () => $user);
+
+            return $next($request);
+        }
+
+        // Legacy fallback: bearer token.
         $plainTextToken = $request->bearerToken();
 
         if (! $plainTextToken) {

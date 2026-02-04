@@ -41,6 +41,11 @@ return [
             'provider' => 'users',
         ],
 
+        'dosen_web' => [
+            'driver' => 'session',
+            'provider' => 'dosen',
+        ],
+
         'api_users' => [
             'driver' => 'sanctum',
             'provider' => 'api_users',
@@ -72,6 +77,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+
+        'dosen' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Dosen::class,
         ],
 
         'api_users' => [
