@@ -52,7 +52,6 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $dosen = $request->user()->select(
-            // 'kode_dosen',
             'nama_dosen',
             'field_studi',
             'alumni',
@@ -61,7 +60,6 @@ class AuthController extends Controller
             'status_dosen',
             'program_studi.nama_program_studi',
             'alamat_email',
-            // 'status_login',
         )
             ->join('program_studi', 'dosen.homebase', '=', 'program_studi.kode_program_studi', 'left')
             ->first();
