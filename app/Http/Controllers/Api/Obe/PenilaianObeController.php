@@ -9,6 +9,7 @@ use App\Models\KelasMahasiswa;
 use App\Models\TahunAkademik;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 
 class PenilaianObeController extends Controller
 {
