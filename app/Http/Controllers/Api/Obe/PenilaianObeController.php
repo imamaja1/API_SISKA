@@ -7,6 +7,7 @@ use App\Models\Dosen;
 use App\Models\Kelas;
 use App\Models\KelasMahasiswa;
 use App\Models\TahunAkademik;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -94,10 +95,18 @@ class PenilaianObeController extends Controller
 
     public function penilaian(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'code_kelas' => 'required|string',
         ]);
-        $kode_kelas = Crypt::decryptString($request->code_kelas);
+
+        try {
+            $kode_kelas = Crypt::decryptString($validated['code_kelas']);
+        } catch (DecryptException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid code_kelas',
+            ], 422);
+        }
 
         $data = KelasMahasiswa::select(
             'khs_detail.kode_khs_detail as id',
@@ -113,7 +122,12 @@ class PenilaianObeController extends Controller
             ->join('krs', 'krs_detail.kode_krs', '=', 'krs.kode_krs')
             ->join('mahasiswa', 'krs.nim', '=', 'mahasiswa.nim')
             ->limit(60)
-            ->where('kelas_id', $kode_kelas)->get();
+            ->where('kelas_id', $kode_kelas)->get()
+            ->map(function ($item) {
+                $item->id = Crypt::encryptString($item->id);
+
+                return $item;
+            });
 
         return response()->json([
             'status' => true,
