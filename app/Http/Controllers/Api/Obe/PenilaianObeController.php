@@ -101,7 +101,9 @@ class PenilaianObeController extends Controller
         ]);
 
         try {
-            $kode_kelas = Crypt::decryptString($validated['code_kelas']);
+            // Encrypted string sering mengandung '+'. Di URL query, '+' bisa terdecode jadi spasi.
+            $encryptedCodeKelas = str_replace(' ', '+', $validated['code_kelas']);
+            $kode_kelas = Crypt::decryptString($encryptedCodeKelas);
         } catch (DecryptException $e) {
             return response()->json([
                 'status' => false,

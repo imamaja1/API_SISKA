@@ -330,7 +330,7 @@ $serverCookieNames = array_keys(request()->cookies->all());
 
                     <div class="form-group">
                         <label class="form-label">
-                            Body
+                            Body / Param (for GET requests)
                             <span class="label-hint">(JSON format)</span>
                         </label>
                         <textarea id="body" class="postman-textarea" rows="8">{}</textarea>
@@ -478,7 +478,7 @@ $serverCookieNames = array_keys(request()->cookies->all());
 
     async function sendRequest() {
         const method = $method.value;
-        const url = $url.value;
+        let url = $url.value;
         
         let headers = {};
         let body = null;
@@ -498,16 +498,35 @@ $serverCookieNames = array_keys(request()->cookies->all());
             }
         }
 
-        if (method !== 'GET') {
-            try {
-                const bodyText = $body.value.trim();
-                if (bodyText && bodyText !== '{}') {
+        try {
+            const bodyText = $body.value.trim();
+            const hasBody = bodyText && bodyText !== '{}';
+
+            if (method === 'GET') {
+                // GET tidak mengirim body. Jika user isi JSON di body, ubah jadi query param.
+                if (hasBody) {
+                    const payload = JSON.parse(bodyText);
+                    const searchParams = new URLSearchParams();
+                    Object.keys(payload || {}).forEach((key) => {
+                        if (payload[key] !== undefined && payload[key] !== null) {
+                            searchParams.set(key, String(payload[key]));
+                        }
+                    });
+
+                    if ([...searchParams.keys()].length > 0) {
+                        url = url.includes('?')
+                            ? `${url}&${searchParams.toString()}`
+                            : `${url}?${searchParams.toString()}`;
+                    }
+                }
+            } else {
+                if (hasBody) {
                     body = JSON.stringify(JSON.parse(bodyText));
                 }
-            } catch (e) {
-                alert('Body must be valid JSON!');
-                return;
             }
+        } catch (e) {
+            alert('Body must be valid JSON!');
+            return;
         }
 
         startTime = performance.now();
