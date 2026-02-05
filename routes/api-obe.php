@@ -13,5 +13,6 @@ Route::prefix('api/v1/obe')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::get('kelas', [PenilaianObeController::class, 'kelas']);
         Route::post('penilaian', [PenilaianObeController::class, 'penilaian']);
+        Route::put('penilaian', [PenilaianObeController::class, 'updatePenilaian']);
     });
 });

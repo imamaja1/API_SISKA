@@ -134,4 +134,47 @@ class PenilaianObeController extends Controller
             'data' => $data,
         ], 200);
     }
+
+    public function updatePenilaian(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|string',
+            'nilai_harian' => 'nullable|numeric|min:0|max:100',
+            'nilai_uts' => 'nullable|numeric|min:0|max:100',
+            'nilai_uas' => 'nullable|numeric|min:0|max:100',
+            'nilai_akhir' => 'nullable|numeric|min:0|max:100',
+        ]);
+        try {
+            $kode_khs_detail = Crypt::decryptString($validated['id']);
+        } catch (DecryptException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid id',
+            ], 422);
+        }
+        $khs_detail = KhsDetail::where('kode_khs_detail', $kode_khs_detail)->first();
+        if (! $khs_detail) {
+            return response()->json([
+                'status' => false,
+                'message' => 'khs_detail not found',
+            ], 404);
+        } else {
+            $nilai_harian = $validated['nilai_harian'] ?? $khs_detail->nilai_harian;
+            $nilai_uts = $validated['nilai_uts'] ?? $khs_detail->nilai_uts;
+            $nilai_uas = $validated['nilai_uas'] ?? $khs_detail->nilai_uas;
+            $nilai_akhir = $validated['nilai_akhir'] ?? $khs_detail->nilai_akhir;
+
+            KhsDetail::where('kode_khs_detail', $kode_khs_detail)->update([
+                'nilai_harian' => $nilai_harian,
+                'nilai_uts' => $nilai_uts,
+                'nilai_uas' => $nilai_uas,
+                'nilai_akhir' => $nilai_akhir,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Penilaian updated successfully',
+            ], 200);
+        }
+    }
 }
