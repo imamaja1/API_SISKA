@@ -54,6 +54,7 @@ class PenilaianObeController extends Controller
         $kode_dosen = $user->getKey();
 
         $data = Kelas::select(
+            'kelas.kelas_id as id',
             'kode_dosen',
             'kelas.kelas_id as code_kelas',
             'matakuliah.nama_matakuliah',
