@@ -113,7 +113,8 @@ class PenilaianObeController extends Controller
         }
 
         $data = KelasMahasiswa::select(
-            'khs_detail.kode_khs_detail as id',
+            'khs_detail.kode_krs_detail as id',
+            'khs_detail.kode_khs_detail as code_penilaian',
             'mahasiswa.nim',
             'mahasiswa.nama_mahasiswa',
             'khs_detail.nilai_harian',
@@ -128,7 +129,7 @@ class PenilaianObeController extends Controller
             ->limit(60)
             ->where('kelas_id', $kode_kelas)->get()
             ->map(function ($item) {
-                $item->id = Crypt::encryptString($item->id);
+                $item->code_penilaian = Crypt::encryptString($item->code_penilaian);
 
                 return $item;
             });
@@ -142,18 +143,18 @@ class PenilaianObeController extends Controller
     public function updatePenilaian(Request $request)
     {
         $validated = $request->validate([
-            'id' => 'required|string',
+            'code_penilaian' => 'required|string',
             'nilai_harian' => 'nullable|numeric|min:0|max:100',
             'nilai_uts' => 'nullable|numeric|min:0|max:100',
             'nilai_uas' => 'nullable|numeric|min:0|max:100',
             'nilai_akhir' => 'nullable|numeric|min:0|max:100',
         ]);
         try {
-            $kode_khs_detail = Crypt::decryptString($validated['id']);
+            $kode_khs_detail = Crypt::decryptString($validated['code_penilaian']);
         } catch (DecryptException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid id',
+                'message' => 'Invalid code_penilaian',
             ], 422);
         }
         $khs_detail = KhsDetail::where('kode_khs_detail', $kode_khs_detail)->first();
