@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Dosen;
 use App\Models\Kelas;
 use App\Models\KelasMahasiswa;
-use App\Models\KhsDetail;
+use App\Models\KHSDetail;
 use App\Models\TahunAkademik;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
