@@ -157,7 +157,7 @@ class PenilaianObeController extends Controller
                 'message' => 'Invalid code_penilaian',
             ], 422);
         }
-        $khs_detail = KhsDetail::where('kode_khs_detail', $kode_khs_detail)->first();
+        $khs_detail = KHSDetail::where('kode_khs_detail', $kode_khs_detail)->first();
         if (! $khs_detail) {
             return response()->json([
                 'status' => false,
@@ -169,7 +169,7 @@ class PenilaianObeController extends Controller
             $nilai_uas = $validated['nilai_uas'] ?? $khs_detail->nilai_uas;
             $nilai_akhir = $validated['nilai_akhir'] ?? $khs_detail->nilai_akhir;
 
-            KhsDetail::where('kode_khs_detail', $kode_khs_detail)->update([
+            KHSDetail::where('kode_khs_detail', $kode_khs_detail)->update([
                 'nilai_harian' => $nilai_harian,
                 'nilai_uts' => $nilai_uts,
                 'nilai_uas' => $nilai_uas,
