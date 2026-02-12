@@ -18,5 +18,3 @@ Route::middleware([EnsureApiUserAuthenticated::class])->prefix('api-panel')->gro
     // OBE auth tester page (browser-based Sanctum cookie auth)
     Route::view('obe-test', 'obe_test')->name('obe_test');
 });
-
-Route::post('api/v1/obe/login', [AuthController::class, 'login']);

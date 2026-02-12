@@ -67,6 +67,22 @@ Hasil:
 
 ## Error umum
 
+### 419 "CSRF token mismatch."
+
+Ini terjadi ketika request dianggap **stateful** (cookie + session aktif), tetapi token CSRF yang dikirim tidak cocok.
+
+Penyebab paling sering:
+
+- Kamu **tidak memanggil** `GET /sanctum/csrf-cookie` sebelum `POST /login`.
+- Cookie `XSRF-TOKEN` dan/atau cookie session tidak tersimpan / tidak ikut terkirim (karena CORS credentials / SameSite / domain).
+- Frontend dan API beda **subdomain**, tetapi cookie dibuat host-only (mis. hanya untuk `api.example.com`), sehingga JavaScript di `app.example.com` **tidak bisa membaca** cookie `XSRF-TOKEN` untuk mengirim header `X-XSRF-TOKEN`.
+
+Solusi ringkas:
+
+- Pastikan `withCredentials: true`.
+- Pastikan CORS mengizinkan origin frontend dan `supports_credentials=true`.
+- Untuk kasus beda subdomain (mis. `app.ubg.ac.id` -> `api-siska-tester.ubg.ac.id`), set `SESSION_DOMAIN=.ubg.ac.id` agar cookie `XSRF-TOKEN` bisa dibaca oleh frontend.
+
 ### "Session store not set on request"
 
 Artinya request kamu **tidak masuk mode stateful (SPA)**, sehingga middleware session tidak berjalan (tidak ada `$request->session()`).
@@ -145,6 +161,23 @@ SANCTUM_STATEFUL_DOMAINS=localhost:5173,127.0.0.1:5173,localhost:3000
 SESSION_DOMAIN=localhost
 ```
 
+Untuk production beda subdomain (contoh):
+
+```
+APP_URL=https://api-siska-tester.ubg.ac.id
+
+SANCTUM_STATEFUL_DOMAINS=app.ubg.ac.id,api-siska-tester.ubg.ac.id
+
+# penting: share cookie lintas subdomain (agar XSRF-TOKEN terbaca di app.ubg.ac.id)
+SESSION_DOMAIN=.ubg.ac.id
+
+SESSION_SECURE_COOKIE=true
+
+# Jika frontend & API masih satu "site" (sama eTLD+1: ubg.ac.id), biasanya aman pakai lax.
+# Kalau frontend benar-benar beda domain (bukan *.ubg.ac.id), pakai none + secure.
+SESSION_SAME_SITE=lax
+```
+
 ### 2) CORS harus support credentials
 
 Karena cookie dikirim lintas origin, CORS wajib:
@@ -157,6 +190,12 @@ Tambahkan origin frontend ke env:
 
 ```
 CORS_ALLOWED_ORIGINS=http://localhost:5173
+```
+
+Untuk production, pastikan pakai https dan origin harus persis (tanpa wildcard):
+
+```
+CORS_ALLOWED_ORIGINS=https://app.ubg.ac.id
 ```
 
 ### 3) HTTPS & SameSite (untuk production)
