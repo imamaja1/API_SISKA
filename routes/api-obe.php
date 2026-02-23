@@ -14,5 +14,6 @@ Route::prefix('api/v1/obe')->group(function () {
         Route::get('kelas', [PenilaianObeController::class, 'kelas']);
         Route::get('penilaian', [PenilaianObeController::class, 'penilaian']);
         Route::put('penilaian', [PenilaianObeController::class, 'updatePenilaian']);
+        Route::put('penilaian/batch', [PenilaianObeController::class, 'updatePenilaianAll']);
     });
 });

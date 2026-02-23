@@ -182,4 +182,50 @@ class PenilaianObeController extends Controller
             ], 200);
         }
     }
+
+    public function updatePenilaianAll(Request $request)
+    {
+        $validated = $request->validate([
+            '*.code_penilaian' => 'required|string',
+            '*.nilai_harian' => 'nullable|numeric|min:0|max:100',
+            '*.nilai_uts' => 'nullable|numeric|min:0|max:100',
+            '*.nilai_uas' => 'nullable|numeric|min:0|max:100',
+            '*.nilai_akhir' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $updates = [];
+        foreach ($validated as $item) {
+            try {
+                $kode_khs_detail = Crypt::decryptString($item['code_penilaian']);
+                $updates[] = [
+                    'kode_khs_detail' => $kode_khs_detail,
+                    'nilai_harian' => $item['nilai_harian'] ?? null,
+                    'nilai_uts' => $item['nilai_uts'] ?? null,
+                    'nilai_uas' => $item['nilai_uas'] ?? null,
+                    'nilai_akhir' => $item['nilai_akhir'] ?? null,
+                ];
+            } catch (DecryptException $e) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Invalid code_penilaian for item with code_penilaian: {$item['code_penilaian']}",
+                ], 422);
+            }
+        }
+
+        DB::transaction(function () use ($updates) {
+            foreach ($updates as $update) {
+                KHSDetail::where('kode_khs_detail', $update['kode_khs_detail'])->update([
+                    'nilai_harian' => $update['nilai_harian'],
+                    'nilai_uts' => $update['nilai_uts'],
+                    'nilai_uas' => $update['nilai_uas'],
+                    'nilai_akhir' => $update['nilai_akhir'],
+                ]);
+            }
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'All penilaian updated successfully',
+        ], 200);
+    }
 }
