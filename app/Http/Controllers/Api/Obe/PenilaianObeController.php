@@ -225,7 +225,7 @@ class PenilaianObeController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'All penilaian updated successfully',
+            'message' => 'Semua penilaian updated successfully',
         ], 200);
     }
 }
