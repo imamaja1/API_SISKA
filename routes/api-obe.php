@@ -8,7 +8,7 @@ Route::prefix('api/v1/obe')->group(function () {
     // Login can be stateful (Sanctum SPA cookie/session) or stateless (Bearer token).
     Route::post('login', [AuthController::class, 'login']);
     // Protected endpoints: accept either Sanctum session (SPA cookie) or Bearer token.
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware(['auth:sanctum', 'auth:dosen_web'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('me', [AuthController::class, 'me']);
         Route::get('kelas', [PenilaianObeController::class, 'kelas']);

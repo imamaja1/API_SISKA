@@ -54,6 +54,10 @@ return [
             'driver' => 'session',
             'provider' => 'api_users',
         ],
+        'auth_mhs_siska' => [
+            'driver' => 'session',
+            'provider' => 'mahasiswa',
+        ],
     ],
 
     /*
@@ -77,6 +81,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+        'mahasiswa' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Mahasiswa::class,
         ],
 
         'dosen' => [

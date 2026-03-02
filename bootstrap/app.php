@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function (): void {
             Route::middleware('api')->group(base_path('routes/api-simortua.php'));
             Route::middleware('api')->group(base_path('routes/api-obe.php'));
+            Route::middleware('api')->group(base_path('routes/api-siska-mahasiswa.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
