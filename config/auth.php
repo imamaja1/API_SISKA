@@ -58,6 +58,10 @@ return [
             'driver' => 'session',
             'provider' => 'mahasiswa',
         ],
+        'auth_divisi_siska' => [
+            'driver' => 'session',
+            'provider' => 'auth_divisi_siska',
+        ],
     ],
 
     /*
@@ -95,6 +99,14 @@ return [
         'api_users' => [
             'driver' => 'eloquent',
             'model' => App\Models\ApiUser::class,
+        ],
+        'auth_mhs_siska' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Mahasiswa::class,
+        ],
+        'auth_divisi_siska' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Pengguna::class,
         ],
 
         // 'users' => [

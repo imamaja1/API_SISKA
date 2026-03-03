@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('api')->group(base_path('routes/api-simortua.php'));
             Route::middleware('api')->group(base_path('routes/api-obe.php'));
             Route::middleware('api')->group(base_path('routes/api-siska-mahasiswa.php'));
+            Route::middleware('api')->group(base_path('routes/api-siska-divisi.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'dosen' => \App\Http\Middleware\EnsureDosenToken::class,
+            'role' => \App\Http\Middleware\EnsureRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

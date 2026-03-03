@@ -34,7 +34,7 @@ return [
     |
     */
 
-    'guard' => ['web', 'dosen_web', 'auth_mhs_siska'],
+    'guard' => ['web', 'dosen_web', 'auth_mhs_siska', 'auth_divisi_siska'],
 
     /*
     |--------------------------------------------------------------------------
