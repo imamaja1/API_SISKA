@@ -16,8 +16,11 @@ Route::prefix('api/v1/divisi')->group(function () {
         Route::get('tahun-akademik', [UniversalController::class, 'tahunAkademik']);
         Route::get('tahun-akademik/aktif', [UniversalController::class, 'tahunAkademikAktif']);
         Route::get('tahun-akademik/find', [UniversalController::class, 'tahunAkademikByKode']);
+        Route::get('program-studi', [UniversalController::class, 'program_studi']);
         Route::middleware(['role:akademik'])->group(function () {
-            Route::get('status-perkuliahan', [AkademikController::class, 'StatusPerkuliahan']);
+            Route::get('status-perkuliahan', [AkademikController::class, 'getStatusPerkuliahan']);
+            Route::get('status-perkuliahan-by-prodi', [AkademikController::class, 'getStatusPerkuliahanByProdi']);
+            Route::put('update-pengumpulan-krs', [AkademikController::class, 'updatePengumpulanKRS']);
         });
     });
 });
