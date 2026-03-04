@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Divisi;
 use App\Http\Controllers\Controller;
 use App\Models\StatusPerkuliahan;
 use App\Models\TahunAkademik;
+use App\Services\ServisChart;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -13,9 +14,12 @@ class AkademikController extends Controller
 {
     protected $kodeTahunAkademikAktif;
 
+    protected $servisChart;
+
     public function __construct()
     {
         // Use query builder's value() (first()->value() would throw because Model has no value()).
+        $this->servisChart = new ServisChart;
         $this->kodeTahunAkademikAktif = TahunAkademik::query()
             ->where('status', 'A')
             ->value('kode_tahun_akademik');
@@ -213,5 +217,49 @@ class AkademikController extends Controller
 
             return response()->json($payload, 500);
         }
+    }
+
+    public function chart_pengumpulan_krs()
+    {
+        $data = $this->servisChart->chart_pengumpulan_krs($this->kodeTahunAkademikAktif);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Data Chart Pengumpulan KRS Ditemukan',
+            'data' => $data,
+        ], 200);
+    }
+
+    public function chart_pengumpulan_krs_by_prodi()
+    {
+        $data = $this->servisChart->chart_pengumpulan_krs_by_prodi($this->kodeTahunAkademikAktif);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Data Chart Pengumpulan KRS by Prodi Ditemukan',
+            'data' => $data,
+        ], 200);
+    }
+
+    public function chart_kumpulan_krs_by_tahun_angkatan()
+    {
+        $data = $this->servisChart->chart_kumpulan_krs_by_tahun_angkatan($this->kodeTahunAkademikAktif);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Data Chart Pengumpulan KRS by Tahun Angkatan Ditemukan',
+            'data' => $data,
+        ], 200);
+    }
+
+    public function chart_kumpulan_krs_by_prodi_and_tahun_angkatan()
+    {
+        $data = $this->servisChart->chart_pengumpulan_krs_by_prodi_angkatan($this->kodeTahunAkademikAktif);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Data Chart Pengumpulan KRS by Prodi and Tahun Angkatan Ditemukan',
+            'data' => $data,
+        ], 200);
     }
 }

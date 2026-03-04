@@ -21,6 +21,10 @@ Route::prefix('api/v1/divisi')->group(function () {
             Route::get('status-perkuliahan', [AkademikController::class, 'getStatusPerkuliahan']);
             Route::get('status-perkuliahan-by-prodi', [AkademikController::class, 'getStatusPerkuliahanByProdi']);
             Route::put('update-pengumpulan-krs', [AkademikController::class, 'updatePengumpulanKRS']);
+            Route::get('chart-pengumpulan-krs', [AkademikController::class, 'chart_pengumpulan_krs']);
+            Route::get('chart-pengumpulan-krs-by-prodi', [AkademikController::class, 'chart_pengumpulan_krs_by_prodi']);
+            Route::get('chart-pengumpulan-krs-by-tahun-angkatan', [AkademikController::class, 'chart_kumpulan_krs_by_tahun_angkatan']);
+            Route::get('chart-pengumpulan-krs-by-prodi-and-tahun-angkatan', [AkademikController::class, 'chart_kumpulan_krs_by_prodi_and_tahun_angkatan']);
         });
     });
 });
