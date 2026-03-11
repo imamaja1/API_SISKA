@@ -222,10 +222,6 @@ $methodColors = [
             <h2 class="mb-0 fw-bold log-page-title">API Write-Log Report</h2>
             <small class="text-muted">Mencatat POST / PUT / PATCH / DELETE &mdash; diakumulasi per bulan</small>
         </div>
-        <a href="{{ route('api_panel.log_report.data', ['source' => $source, 'date' => $date]) }}" target="_blank"
-            class="btn btn-sm btn-outline-secondary">
-            &darr; Raw JSON
-        </a>
     </div>
 
     {{-- Filter --}}
