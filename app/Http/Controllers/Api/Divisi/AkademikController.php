@@ -88,6 +88,134 @@ class AkademikController extends Controller
         }
     }
 
+    public function getStatusPerkuliahanKumpul()
+    {
+        try {
+            if (! $this->kodeTahunAkademikAktif) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tahun Akademik Aktif Tidak Ditemukan',
+                ], 404);
+            }
+
+            $data = StatusPerkuliahan::query()
+                ->select(
+                    'kode_status_perkuliahan as id',
+                    'kode_status_perkuliahan as kode',
+                    'mahasiswa.nim',
+                    'nama_mahasiswa',
+                    'nama_program_studi',
+                    'status_perkuliahan',
+                    'pembayaran_spp',
+                    'pembayaran_sks',
+                    'pembayaran_lab',
+                    'pengumpulan_krs',
+                )
+                ->join('mahasiswa', 'status_perkuliahan.nim', '=', 'mahasiswa.nim')
+                ->join('program_studi', 'mahasiswa.program_studi_kode', '=', 'program_studi.kode_program_studi')
+                ->where('kode_tahun_akademik', $this->kodeTahunAkademikAktif)
+                ->where('pengumpulan_krs', '1')
+                ->get()
+                ->map(function ($item) {
+                    $item->kode = Crypt::encryptString((string) $item->kode);
+
+                    return $item;
+                });
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Status Perkuliahan Tidak Ditemukan',
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Status Perkuliahan Ditemukan',
+                'data' => $data,
+            ], 200);
+        } catch (\Throwable $e) {
+            report($e);
+
+            $payload = [
+                'status' => false,
+                'message' => 'Internal Server Error',
+            ];
+
+            if (config('app.debug')) {
+                $payload['debug'] = [
+                    'error' => $e->getMessage(),
+                ];
+            }
+
+            return response()->json($payload, 500);
+        }
+    }
+
+    public function getStatusPerkuliahanNotKumpul()
+    {
+        try {
+            if (! $this->kodeTahunAkademikAktif) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tahun Akademik Aktif Tidak Ditemukan',
+                ], 404);
+            }
+
+            $data = StatusPerkuliahan::query()
+                ->select(
+                    'kode_status_perkuliahan as id',
+                    'kode_status_perkuliahan as kode',
+                    'mahasiswa.nim',
+                    'nama_mahasiswa',
+                    'nama_program_studi',
+                    'status_perkuliahan',
+                    'pembayaran_spp',
+                    'pembayaran_sks',
+                    'pembayaran_lab',
+                    'pengumpulan_krs',
+                )
+                ->join('mahasiswa', 'status_perkuliahan.nim', '=', 'mahasiswa.nim')
+                ->join('program_studi', 'mahasiswa.program_studi_kode', '=', 'program_studi.kode_program_studi')
+                ->where('kode_tahun_akademik', $this->kodeTahunAkademikAktif)
+                ->where('pengumpulan_krs', '0')
+                ->get()
+                ->map(function ($item) {
+                    $item->kode = Crypt::encryptString((string) $item->kode);
+
+                    return $item;
+                });
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Status Perkuliahan Tidak Ditemukan',
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Status Perkuliahan Ditemukan',
+                'data' => $data,
+            ], 200);
+        } catch (\Throwable $e) {
+            report($e);
+
+            $payload = [
+                'status' => false,
+                'message' => 'Internal Server Error',
+            ];
+
+            if (config('app.debug')) {
+                $payload['debug'] = [
+                    'error' => $e->getMessage(),
+                ];
+            }
+
+            return response()->json($payload, 500);
+        }
+    }
+
     public function getStatusPerkuliahanByProdi(Request $request)
     {
         try {
@@ -128,6 +256,162 @@ class AkademikController extends Controller
                 ->join('program_studi', 'mahasiswa.program_studi_kode', '=', 'program_studi.kode_program_studi')
                 ->where('status_perkuliahan.kode_tahun_akademik', $this->kodeTahunAkademikAktif)
                 ->where('program_studi.kode_program_studi', $kodeProgramStudi)
+                ->get()
+                ->map(function ($item) {
+                    $item->kode = Crypt::encryptString((string) $item->kode);
+
+                    return $item;
+                });
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Status Perkuliahan Tidak Ditemukan untuk Program Studi ini',
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Status Perkuliahan Ditemukan untuk Program Studi ini',
+                'data' => $data,
+            ], 200);
+        } catch (\Throwable $e) {
+            report($e);
+
+            $payload = [
+                'status' => false,
+                'message' => 'Internal Server Error',
+            ];
+
+            if (config('app.debug')) {
+                $payload['debug'] = [
+                    'error' => $e->getMessage(),
+                ];
+            }
+
+            return response()->json($payload, 500);
+        }
+    }
+
+    public function getStatusPerkuliahanByProdiKumpul(Request $request)
+    {
+        try {
+            if (! $this->kodeTahunAkademikAktif) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tahun Akademik Aktif Tidak Ditemukan',
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'kode' => 'required|string',
+            ]);
+
+            try {
+                $kodeProgramStudi = Crypt::decryptString($validated['kode']);
+            } catch (DecryptException $e) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'kode_prodi tidak valid',
+                ], 400);
+            }
+
+            $data = StatusPerkuliahan::query()
+                ->select(
+                    'kode_status_perkuliahan as id',
+                    'kode_status_perkuliahan as kode',
+                    'mahasiswa.nim',
+                    'nama_mahasiswa',
+                    'nama_program_studi',
+                    'status_perkuliahan',
+                    'pembayaran_spp',
+                    'pembayaran_sks',
+                    'pembayaran_lab',
+                    'pengumpulan_krs',
+                )
+                ->join('mahasiswa', 'status_perkuliahan.nim', '=', 'mahasiswa.nim')
+                ->join('program_studi', 'mahasiswa.program_studi_kode', '=', 'program_studi.kode_program_studi')
+                ->where('status_perkuliahan.kode_tahun_akademik', $this->kodeTahunAkademikAktif)
+                ->where('program_studi.kode_program_studi', $kodeProgramStudi)
+                ->where('pengumpulan_krs', '1')
+                ->get()
+                ->map(function ($item) {
+                    $item->kode = Crypt::encryptString((string) $item->kode);
+
+                    return $item;
+                });
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Status Perkuliahan Tidak Ditemukan untuk Program Studi ini',
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Status Perkuliahan Ditemukan untuk Program Studi ini',
+                'data' => $data,
+            ], 200);
+        } catch (\Throwable $e) {
+            report($e);
+
+            $payload = [
+                'status' => false,
+                'message' => 'Internal Server Error',
+            ];
+
+            if (config('app.debug')) {
+                $payload['debug'] = [
+                    'error' => $e->getMessage(),
+                ];
+            }
+
+            return response()->json($payload, 500);
+        }
+    }
+
+    public function getStatusPerkuliahanByProdiNotKumpul(Request $request)
+    {
+        try {
+            if (! $this->kodeTahunAkademikAktif) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tahun Akademik Aktif Tidak Ditemukan',
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'kode' => 'required|string',
+            ]);
+
+            try {
+                $kodeProgramStudi = Crypt::decryptString($validated['kode']);
+            } catch (DecryptException $e) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'kode_prodi tidak valid',
+                ], 400);
+            }
+
+            $data = StatusPerkuliahan::query()
+                ->select(
+                    'kode_status_perkuliahan as id',
+                    'kode_status_perkuliahan as kode',
+                    'mahasiswa.nim',
+                    'nama_mahasiswa',
+                    'nama_program_studi',
+                    'status_perkuliahan',
+                    'pembayaran_spp',
+                    'pembayaran_sks',
+                    'pembayaran_lab',
+                    'pengumpulan_krs',
+                )
+                ->join('mahasiswa', 'status_perkuliahan.nim', '=', 'mahasiswa.nim')
+                ->join('program_studi', 'mahasiswa.program_studi_kode', '=', 'program_studi.kode_program_studi')
+                ->where('status_perkuliahan.kode_tahun_akademik', $this->kodeTahunAkademikAktif)
+                ->where('program_studi.kode_program_studi', $kodeProgramStudi)
+                ->where('pengumpulan_krs', '0')
                 ->get()
                 ->map(function ($item) {
                     $item->kode = Crypt::encryptString((string) $item->kode);

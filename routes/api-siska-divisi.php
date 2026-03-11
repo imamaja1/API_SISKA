@@ -19,7 +19,11 @@ Route::prefix('api/v1/divisi')->group(function () {
         Route::get('program-studi', [UniversalController::class, 'program_studi']);
         Route::middleware(['role:akademik'])->group(function () {
             Route::get('status-perkuliahan', [AkademikController::class, 'getStatusPerkuliahan']);
+            Route::get('status-perkuliahan-not-kumpul', [AkademikController::class, 'getStatusPerkuliahanNotKumpul']);
+            Route::get('status-perkuliahan-kumpul', [AkademikController::class, 'getStatusPerkuliahanKumpul']);
             Route::get('status-perkuliahan-by-prodi', [AkademikController::class, 'getStatusPerkuliahanByProdi']);
+            Route::get('status-perkuliahan-by-prodi-kumpul', [AkademikController::class, 'getStatusPerkuliahanByProdiKumpul']);
+            Route::get('status-perkuliahan-by-prodi-not-kumpul', [AkademikController::class, 'getStatusPerkuliahanByProdiNotKumpul']);
             Route::put('update-pengumpulan-krs', [AkademikController::class, 'updatePengumpulanKRS']);
             Route::get('chart-pengumpulan-krs', [AkademikController::class, 'chart_pengumpulan_krs']);
             Route::get('chart-pengumpulan-krs-by-prodi', [AkademikController::class, 'chart_pengumpulan_krs_by_prodi']);
