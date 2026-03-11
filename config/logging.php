@@ -65,6 +65,38 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'api_requests' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api_requests.log'),
+            'level' => 'info',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        'api_simortua' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api_simortua.log'),
+            'level' => 'info',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        'api_divisi' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api_divisi.log'),
+            'level' => 'info',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        'api_mahasiswa' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api_mahasiswa.log'),
+            'level' => 'info',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),

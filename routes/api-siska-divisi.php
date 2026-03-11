@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\Divisi\UniversalController;
 use App\Http\Controllers\Devisi\AuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('api/v1/divisi')->group(function () {
+Route::prefix('api/v1/divisi')->middleware(['log.divisi', 'log.json:divisi'])->group(function () {
     // Login can be stateful (Sanctum SPA cookie/session) or stateless (Bearer token).
     Route::post('login', [AuthController::class, 'login']);
     // Protected endpoints: accept either Sanctum session (SPA cookie) or Bearer token.

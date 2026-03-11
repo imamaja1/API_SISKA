@@ -12,7 +12,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         crossorigin="anonymous">
     <link rel="stylesheet" href="{{ asset('css/docs.css') }}">
-
+    @stack('styles')
 </head>
 
 <body>
@@ -25,15 +25,31 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    @auth('api_users_web')
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('api_panel.home') ? 'active' : '' }}"
+                            href="{{ route('api_panel.home') }}">📄 API Docs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('obe_test') ? 'active' : '' }}"
+                            href="{{ route('obe_test') }}">🧪 OBE Test</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('api_panel.log_report') ? 'active' : '' }}"
+                            href="{{ route('api_panel.log_report') }}">📊 Log Report</a>
+                    </li>
+                    @endauth
+                </ul>
                 <ul class="navbar-nav ms-auto">
                     @auth('api_users_web')
-                        <li class="nav-item">
-                            <form action="{{ route('api_user.logout') }}" method="POST" class="d-inline">
-                                @csrf
-                                <button class="btn btn-link nav-link" type="submit"
-                                    style="color: var(--color-text-light); text-decoration: none;">Logout</button>
-                            </form>
-                        </li>
+                    <li class="nav-item">
+                        <form action="{{ route('api_user.logout') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button class="btn btn-link nav-link" type="submit"
+                                style="color: var(--color-text-light); text-decoration: none;">Logout</button>
+                        </form>
+                    </li>
                     @endauth
                 </ul>
             </div>
@@ -42,17 +58,17 @@
 
     <div class="container">
         @if (session('status'))
-            <div class="alert alert-success"
-                style="position: fixed; top: 80px; right: 20px; z-index: 1000; max-width: 400px;">
-                {{ session('status') }}
-            </div>
+        <div class="alert alert-success"
+            style="position: fixed; top: 80px; right: 20px; z-index: 1000; max-width: 400px;">
+            {{ session('status') }}
+        </div>
         @endif
 
         @if ($errors->any())
-            <div class="alert alert-danger"
-                style="position: fixed; top: 80px; right: 20px; z-index: 1000; max-width: 400px;">
-                {{ $errors->first() }}
-            </div>
+        <div class="alert alert-danger"
+            style="position: fixed; top: 80px; right: 20px; z-index: 1000; max-width: 400px;">
+            {{ $errors->first() }}
+        </div>
         @endif
 
         @yield('content')
@@ -88,8 +104,12 @@
     </script>
 
     <footer class="api-footer">
-        <p>API SISKA <span class="version">v1.0</span> • {{ date('Y') }} • Documentation</p>
+        <p>API SISKA <span class="version">v1.0</span> &bull; {{ date('Y') }} &bull; Documentation</p>
     </footer>
+
+    <!-- jQuery (required by DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+    @stack('scripts')
 </body>
 
 </html>
