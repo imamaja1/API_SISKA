@@ -23,13 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
 
         $middleware->alias([
-            'dosen'           => \App\Http\Middleware\EnsureDosenToken::class,
-            'role'            => \App\Http\Middleware\EnsureRole::class,
-            'log.api'         => \App\Http\Middleware\LogApiRequest::class,
-            'log.simortua'    => \App\Http\Middleware\LogSimortuaRequest::class,
-            'log.divisi'      => \App\Http\Middleware\LogDivisiRequest::class,
-            'log.mahasiswa'   => \App\Http\Middleware\LogMahasiswaRequest::class,
-            'log.json'        => \App\Http\Middleware\LogToJson::class,
+            'dosen' => \App\Http\Middleware\EnsureDosenToken::class,
+            'role' => \App\Http\Middleware\EnsureRole::class,
+            'log.api' => \App\Http\Middleware\LogApiRequest::class,
+            'log.simortua' => \App\Http\Middleware\LogSimortuaRequest::class,
+            'log.divisi' => \App\Http\Middleware\LogDivisiRequest::class,
+            'log.mahasiswa' => \App\Http\Middleware\LogMahasiswaRequest::class,
+            'log.json' => \App\Http\Middleware\LogToJson::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

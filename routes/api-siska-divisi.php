@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Divisi\AkademikController;
+use App\Http\Controllers\Api\Divisi\KedokteranController;
 use App\Http\Controllers\Api\Divisi\UniversalController;
 use App\Http\Controllers\Devisi\AuthController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,12 @@ Route::prefix('api/v1/divisi')->middleware(['log.divisi', 'log.json:divisi'])->g
         Route::get('tahun-akademik/aktif', [UniversalController::class, 'tahunAkademikAktif']);
         Route::get('tahun-akademik/find', [UniversalController::class, 'tahunAkademikByKode']);
         Route::get('program-studi', [UniversalController::class, 'program_studi']);
+        // kedokteran endpoint
+        Route::get('get-mhs-kedokteran', [KedokteranController::class, 'get_mhs_kedokteran']);
+        Route::get('get-dosen-kedokteran', [KedokteranController::class, 'get_dosen_kedokteran']);
+        Route::get('get-tahun-akademik', [KedokteranController::class, 'get_tahun_akademik']);
+        Route::get('get-matakuliah', [KedokteranController::class, 'get_matakuliah']);
+        Route::get('get-krs-khs', [KedokteranController::class, 'get_krs_khs']);
         Route::middleware(['role:akademik'])->group(function () {
             Route::get('status-perkuliahan', [AkademikController::class, 'getStatusPerkuliahan']);
             Route::get('status-perkuliahan-not-kumpul', [AkademikController::class, 'getStatusPerkuliahanNotKumpul']);

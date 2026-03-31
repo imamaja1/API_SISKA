@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Mahasiswa extends Authenticatable
 {
@@ -71,5 +70,18 @@ class Mahasiswa extends Authenticatable
     public function nama_prodi(): HasOne
     {
         return $this->hasOne(ProgramStudi::class, 'kode_program_studi', 'program_studi_kode')->select('kode_program_studi', 'nama_program_studi');
+    }
+
+    public function krs()
+    {
+        return $this->hasMany(KRS::class, 'nim', 'nim');
+    }
+
+    public function krs_detail()
+    {
+        return $this->hasManyThrough(
+            KRSDetail::class, KRS::class, 'nim', 'kode_krs', 'nim', 'kode_krs'
+        )->join('khs_detail', 'krs_detail.kode_krs_detail', '=', 'khs_detail.kode_krs_detail')
+            ->select('krs_detail.*', 'khs_detail.kode_khs_detail', 'khs_detail.nilai_akhir');
     }
 }
