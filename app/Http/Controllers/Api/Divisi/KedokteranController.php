@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Divisi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dosen;
+use App\Models\Kelas;
 use App\Models\Mahasiswa;
 use App\Models\Matakuliah;
 use App\Models\TahunAkademik;
@@ -56,6 +57,20 @@ class KedokteranController extends Controller
     {
         $data = Matakuliah::select('*', 'id_matakuliah as id')
             ->where('kode_program_studi', '23')->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $data,
+        ], 200);
+    }
+
+    public function get_kelas()
+    {
+        $data = Kelas::with('nama_kelas', 'dosen', 'mahasiswa')
+            ->select('kelas.kelas_id', 'kelas.nama_kelas_id', 'kelas.semester', 'kelas.kode_tahun_akademik', 'kelas.kode_program_studi', 'kelas.id_matakuliah')
+            ->where('kelas.kode_program_studi', '23')
+            ->limit(10)
+            ->get();
 
         return response()->json([
             'status' => true,
