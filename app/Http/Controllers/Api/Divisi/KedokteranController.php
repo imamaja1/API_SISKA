@@ -66,10 +66,9 @@ class KedokteranController extends Controller
 
     public function get_kelas()
     {
-        $data = Kelas::with('nama_kelas', 'dosen', 'mahasiswa')
-            ->select('kelas.kelas_id', 'kelas.nama_kelas_id', 'kelas.semester', 'kelas.kode_tahun_akademik', 'kelas.kode_program_studi', 'kelas.id_matakuliah')
+        $data = Kelas::with('nama_kelas_kedokteran', 'dosen_kedokteran', 'mahasiswa_kedokteran')
+            ->select('kelas.kelas_id', 'kelas.nama_kelas_id', 'kelas.semester', 'kelas.kode_tahun_akademik', 'kelas.kode_program_studi', 'kelas.id_matakuliah as kode_matakuliah')
             ->where('kelas.kode_program_studi', '23')
-            ->limit(10)
             ->get();
 
         return response()->json([

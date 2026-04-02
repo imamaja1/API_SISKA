@@ -77,7 +77,17 @@ class Kelas extends Model
         return $this->hasMany(Mengajar::class, 'kelas_id', 'kelas_id');
     }
 
+    public function dosen_kedokteran()
+    {
+        return $this->hasMany(Mengajar::class, 'kelas_id', 'kelas_id');
+    }
+
     public function mahasiswa()
+    {
+        return $this->hasMany(KelasMahasiswa::class, 'kelas_id', 'kelas_id');
+    }
+
+    public function mahasiswa_kedokteran()
     {
         return $this->hasMany(KelasMahasiswa::class, 'kelas_id', 'kelas_id')->select('kelas_id as k_id', 'kelas_id', 'kode_krs_detail as k_krs_detail', 'kelas_mahasiswa_id as k_mahasiswa_id');
     }

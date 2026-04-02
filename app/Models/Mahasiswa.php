@@ -82,6 +82,6 @@ class Mahasiswa extends Authenticatable
         return $this->hasManyThrough(
             KRSDetail::class, KRS::class, 'nim', 'kode_krs', 'nim', 'kode_krs'
         )->join('khs_detail', 'krs_detail.kode_krs_detail', '=', 'khs_detail.kode_krs_detail')
-            ->select('krs_detail.*', 'khs_detail.kode_khs_detail', 'khs_detail.nilai_akhir');
+            ->select('krs_detail.*', 'krs_detail.kode_krs_detail as k_krs_detail', 'khs_detail.kode_khs_detail', 'khs_detail.nilai_akhir');
     }
 }
