@@ -25,6 +25,7 @@ Route::prefix('api/v1/divisi')->middleware(['log.divisi', 'log.json:divisi'])->g
         Route::get('get-matakuliah', [KedokteranController::class, 'get_matakuliah']);
         Route::get('get-krs-khs', [KedokteranController::class, 'get_krs_khs']);
         Route::get('get-kelas', [KedokteranController::class, 'get_kelas']);
+        Route::get('get-kurikulum', [KedokteranController::class, 'get_kurikulum']);
         Route::middleware(['role:akademik'])->group(function () {
             Route::get('status-perkuliahan', [AkademikController::class, 'getStatusPerkuliahan']);
             Route::get('status-perkuliahan-not-kumpul', [AkademikController::class, 'getStatusPerkuliahanNotKumpul']);
