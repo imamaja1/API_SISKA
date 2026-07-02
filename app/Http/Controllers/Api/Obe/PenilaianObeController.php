@@ -314,19 +314,16 @@ class PenilaianObeController extends Controller
         );
     }
 
-    // disni
-    // buatkan saya penilaian,updatePenilaian,updatePenilaianAll dengan request kelas
-    // dengan mengunakan
     public function obe_penilaian(Request $request)
     {
         $validated = $request->validate([
             "code_kelas" => "required|string",
+            "nim" => "nullable|string|regex:/^\d{11,13}$/",
         ]);
 
-        try {
-            preg_match("/[A-Za-z](\d+)-/", $validated["code_kelas"], $matches);
-            $kode_kelas = $matches[1];
-        } catch (DecryptException $e) {
+        preg_match("/[A-Za-z](\d+)-/", $validated["code_kelas"], $matches);
+
+        if (!isset($matches[1])) {
             return response()->json(
                 [
                     "status" => false,
@@ -335,7 +332,10 @@ class PenilaianObeController extends Controller
                 422,
             );
         }
-        $data = KelasMahasiswa::select(
+
+        $kode_kelas = $matches[1];
+
+        $query = KelasMahasiswa::select(
             "khs_detail.kode_krs_detail as id",
             "khs_detail.kode_khs_detail as code_penilaian",
             "mahasiswa.nim",
@@ -359,16 +359,19 @@ class PenilaianObeController extends Controller
             )
             ->join("krs", "krs_detail.kode_krs", "=", "krs.kode_krs")
             ->join("mahasiswa", "krs.nim", "=", "mahasiswa.nim")
-            ->limit(60)
-            ->where("kelas_id", $kode_kelas)
-            ->get()
-            ->map(function ($item) {
-                $item->code_penilaian = Crypt::encryptString(
-                    $item->code_penilaian,
-                );
+            ->where("kelas_id", $kode_kelas);
 
-                return $item;
-            });
+        if (!empty($validated["nim"])) {
+            $query->where("mahasiswa.nim", $validated["nim"]);
+        }
+
+        $data = $query->get()->map(function ($item) {
+            $item->code_penilaian = Crypt::encryptString(
+                $item->code_penilaian,
+            );
+
+            return $item;
+        });
 
         return response()->json(
             [
