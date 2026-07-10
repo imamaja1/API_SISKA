@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Katagoris\Schemas;
 
-use Filament\Forms\Components\TextArea;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -19,7 +19,7 @@ class KatagoriForm
                     ->reactive()
                     ->columnSpanFull()
                     ->maxLength(255),
-                TextArea::make('description')
+                Textarea::make('description')
                     ->label('Description')
                     ->nullable()
                     ->columnSpanFull()
