@@ -344,6 +344,7 @@ class PenilaianObeController extends Controller
             "khs_detail.nilai_uts",
             "khs_detail.nilai_uas",
             "khs_detail.nilai_akhir",
+            "sistem_penilaian_detail.grade",
         )
             ->join(
                 "krs_detail",
@@ -359,6 +360,11 @@ class PenilaianObeController extends Controller
             )
             ->join("krs", "krs_detail.kode_krs", "=", "krs.kode_krs")
             ->join("mahasiswa", "krs.nim", "=", "mahasiswa.nim")
+            ->leftJoin('sistem_penilaian_detail', function ($join) {
+                $join->where('sistem_penilaian_detail.kode_sistem_penilaian', 1)
+                    ->whereColumn('khs_detail.nilai_akhir', '>=', 'sistem_penilaian_detail.nilai_minimum')
+                    ->whereColumn('khs_detail.nilai_akhir', '<=', 'sistem_penilaian_detail.nilai_maksimum');
+            })
             ->where("kelas_id", $kode_kelas);
 
         if (!empty($validated["nim"])) {
