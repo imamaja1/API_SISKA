@@ -68,10 +68,15 @@ class Kurikulum extends Model
         'tanggal_terbuat' => 'datetime',
     ];
 
+    public function namaKurikulum()
+    {
+        return $this->belongsTo(NamaKurikulum::class, 'kode_nama_kurikulum', 'kode_nama_kurikulum');
+    }
+
     public function matakuliah()
     {
         return $this->hasOne(Matakuliah::class, 'id_matakuliah', 'id_matakuliah')
-            ->select('id_matakuliah', 'nama_matakuliah', 'sks_teori', 'sks_praktek', 'sks_praktikum');
+            ->select('id_matakuliah', 'kode_matakuliah', 'nama_matakuliah', 'sks_teori', 'sks_praktek', 'sks_praktikum');
     }
 
     public function nilai()

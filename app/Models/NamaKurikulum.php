@@ -55,6 +55,11 @@ class NamaKurikulum extends Model
         return $this->belongsTo(Pengguna::class, 'kode_pengguna', 'kode_pengguna');
     }
 
+    public function kurikulumAngkatan()
+    {
+        return $this->hasMany(KurikulumAngkatan::class, 'kode_nama_kurikulum', 'kode_nama_kurikulum');
+    }
+
     public function kurikulum()
     {
         return $this->hasMany(Kurikulum::class, 'kode_nama_kurikulum', 'kode_nama_kurikulum');
