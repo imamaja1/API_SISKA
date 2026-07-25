@@ -115,7 +115,7 @@ class MahasiswaController extends Controller
 
         $query = Mahasiswa::query()
             ->with('nama_prodi')
-            ->select('nim', 'nama_mahasiswa', 'program_studi_kode', 'status');
+            ->select('nim', 'nama_mahasiswa', 'program_studi_kode','email','telepon', 'status');
         if ($programStudiKode !== null && $programStudiKode !== '') {
             $query->where('program_studi_kode', (int) $programStudiKode);
         }
