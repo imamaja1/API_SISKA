@@ -317,7 +317,7 @@ class PenilaianObeController extends Controller
     public function obe_penilaian(Request $request)
     {
         $validated = $request->validate([
-            "kode_kelas" => "required|string",
+            "code_kelas" => "required|string",
             "nim" => "nullable|string|regex:/^\d{11,13}$/",
         ]);
 
