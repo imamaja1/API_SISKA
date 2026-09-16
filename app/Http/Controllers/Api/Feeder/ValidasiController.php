@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Feeder;
 use App\Http\Controllers\Api\Traits\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
-use App\Models\Kurikulum;
+use App\Models\KRSDetail;
 use App\Models\Mahasiswa;
 use App\Models\ProgramStudi;
 use App\Models\TahunAkademik;
@@ -288,22 +288,21 @@ class ValidasiController extends Controller
         if (! $ta) {
             return $this->error('Tahun akademik tidak ditemukan', 404);
         }
-        $angkatan = explode('/', $ta->tahun_akademik)[0];
 
-        $matakuliah = Kurikulum::whereHas('namaKurikulum', function ($q) use (
+        $matakuliah = KRSDetail::whereHas('krs', function ($q) use (
+            $kodeTa,
             $kodeProdi,
         ) {
-            $q->where('kode_program_studi', $kodeProdi);
+            $q->where('kode_tahun_akademik', $kodeTa)
+                ->whereHas('mahasiswa', function ($q2) use ($kodeProdi) {
+                    $q2->where('program_studi_kode', $kodeProdi);
+                });
         })
-            ->whereHas('namaKurikulum.kurikulumAngkatan', function ($q) use (
-                $angkatan,
-            ) {
-                $q->where('angkatan', $angkatan);
-            })
             ->with('matakuliah')
             ->get()
             ->pluck('matakuliah')
             ->filter()
+            ->unique('id_matakuliah')
             ->values()
             ->map(function ($item) {
                 return [
