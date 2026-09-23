@@ -6,6 +6,7 @@ use App\Models\FeederCredential;
 use Exception;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
+use Throwable;
 
 class FeederService
 {
@@ -27,13 +28,13 @@ class FeederService
 
     private const TOKEN_EXPIRY = 3600;
 
-    public function __construct()
+    public function __construct(array $credentials = [])
     {
-        $this->host = $this->getDecrypted('feeder_url');
-        $this->port = $this->getDecrypted('feeder_port') ?: '8080';
-        $this->username = $this->getDecrypted('feeder_username');
-        $this->password = $this->getDecrypted('feeder_password');
-        $this->endpoint = $this->getDecrypted('feeder_endpoint') ?: 'ws/live2.php';
+        $this->host = $this->credential('feeder_url', $credentials);
+        $this->port = $this->credential('feeder_port', $credentials) ?: '8080';
+        $this->username = $this->credential('feeder_username', $credentials);
+        $this->password = $this->credential('feeder_password', $credentials);
+        $this->endpoint = $this->credential('feeder_endpoint', $credentials) ?: 'ws/live2.php';
         $this->timeout = (int) config('feeder.timeout', 30);
         $this->retry = (int) config('feeder.retry', 3);
     }
@@ -46,6 +47,24 @@ class FeederService
     public function isConfigured(): bool
     {
         return $this->host !== '' && $this->username !== '' && $this->password !== '';
+    }
+
+    /**
+     * @return array{ok: bool, message: string}
+     */
+    public function testConnection(): array
+    {
+        if (! $this->isConfigured()) {
+            return ['ok' => false, 'message' => 'URL, username, dan password Feeder wajib diisi.'];
+        }
+
+        try {
+            $this->loginFeeder();
+
+            return ['ok' => true, 'message' => "Berhasil terhubung ke Feeder di {$this->baseUrl()}."];
+        } catch (Throwable $exception) {
+            return ['ok' => false, 'message' => $exception->getMessage()];
+        }
     }
 
     public function getToken(): string
@@ -226,6 +245,15 @@ class FeederService
         return false;
     }
 
+    private function credential(string $key, array $credentials): string
+    {
+        if (array_key_exists($key, $credentials)) {
+            return (string) ($credentials[$key] ?? '');
+        }
+
+        return $this->getDecrypted($key);
+    }
+
     private function getDecrypted(string $key): string
     {
         $encrypted = FeederCredential::where('key_name', $key)->value('key_value');
@@ -234,6 +262,10 @@ class FeederService
             return '';
         }
 
-        return Crypt::decryptString($encrypted);
+        try {
+            return Crypt::decryptString($encrypted);
+        } catch (Throwable) {
+            return '';
+        }
     }
 }
