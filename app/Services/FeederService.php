@@ -93,6 +93,36 @@ class FeederService
         return $data['data'] ?? [];
     }
 
+    /**
+     * Ambil semua data dari feeder dengan pagination loop (limit/offset).
+     */
+    public function getDataAll(string $action, array $params = [], int $chunk = 5000): array
+    {
+        $all = [];
+        $offset = 0;
+
+        while (true) {
+            $batch = $this->getData($action, array_merge($params, [
+                'limit' => $chunk,
+                'offset' => $offset,
+            ]));
+
+            $count = count($batch);
+            $totalBefore = count($all);
+            $all = array_merge($all, $batch);
+
+            // Berhenti jika batch kosong/lebih kecil dari chunk,
+            // atau feeder mengabaikan limit/offset (total tidak bertambah).
+            if ($count < $chunk || count($all) === $totalBefore) {
+                break;
+            }
+
+            $offset += $chunk;
+        }
+
+        return $all;
+    }
+
     public function getDictionary(): array
     {
         $token = $this->getToken();

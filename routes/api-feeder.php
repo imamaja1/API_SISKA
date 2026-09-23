@@ -14,6 +14,8 @@ Route::prefix('api/v1/feeder')->middleware(['log.api', 'log.json:feeder'])->grou
 
         Route::get('validasi/mahasiswa', [ValidasiController::class, 'validasiMahasiswa']);
         Route::get('validasi/kelas', [ValidasiController::class, 'validasiKelas']);
+        Route::get('validasi/semua-mahasiswa', [ValidasiController::class, 'validasiSemuaMahasiswa']);
+        Route::get('validasi/semua-kelas', [ValidasiController::class, 'validasiSemuaKelas']);
 
         Route::middleware(['role:akademik', ThrottleRequests::class.':30,1'])->group(function () {
             Route::post('sync', [SyncController::class, 'sync']);
