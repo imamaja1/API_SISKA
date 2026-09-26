@@ -39,7 +39,6 @@ class MahasiswaController extends Controller
         $programStudiKode = $request->query('program_studi_kode');
         $statusPendaftaran = $request->query('status_pendaftaran');
         $status = $request->query('status');
-        $angkatan = $request->query('angkatan');
 
         $query = Mahasiswa::query()
             ->with('nama_prodi')
@@ -68,9 +67,12 @@ class MahasiswaController extends Controller
             $query->where('status', $status);
         }
 
-        if ($request->has('angkatan') && $request->query('angkatan') !== '') {
-            $angkatan = substr($request->query('angkatan'), 2, 2);
-            $query->where('nim', 'like', $angkatan.'%');
+        if ($request->filled('angkatan')) {
+            $angkatanInput = trim((string) $request->query('angkatan'));
+            $tahun = strlen($angkatanInput) > 2
+                ? substr($angkatanInput, 2, 2)
+                : str_pad($angkatanInput, 2, '0', STR_PAD_LEFT);
+            $query->where('nim', 'like', $tahun.'%');
         }
 
         $data = $query
@@ -110,7 +112,6 @@ class MahasiswaController extends Controller
         }
         $programStudiKode = $request->query('program_studi_kode');
         $status = $request->query('status');
-        $angkatan = $request->query('angkatan');
         $namaProgramStudi = $request->query('nama_program_studi');
 
         $query = Mahasiswa::query()
@@ -127,9 +128,12 @@ class MahasiswaController extends Controller
                 $q->where('nama_program_studi', 'like', $namaProgramStudi.'%');
             });
         }
-        if ($request->has('angkatan') && $request->query('angkatan') !== '') {
-            $angkatan = substr($request->query('angkatan'), 2, 2);
-            $query->where('nim', 'like', $angkatan.'%');
+        if ($request->filled('angkatan')) {
+            $angkatanInput = trim((string) $request->query('angkatan'));
+            $tahun = strlen($angkatanInput) > 2
+                ? substr($angkatanInput, 2, 2)
+                : str_pad($angkatanInput, 2, '0', STR_PAD_LEFT);
+            $query->where('nim', 'like', $tahun.'%');
         }
         $data = $query
             ->orderByDesc('nim')
