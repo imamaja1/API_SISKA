@@ -624,6 +624,39 @@ class ValidasiController extends Controller
         return $this->success(['data' => $kelas]);
     }
 
+    /**
+     * GET /api/v1/feeder/biodata-mahasiswa?nim=...
+     */
+    public function getBiodataMahasiswa(Request $request): JsonResponse
+    {
+        $request->validate([
+            'nim' => 'required|string',
+        ]);
+
+        if (! $this->feederService->isConfigured()) {
+            return $this->error(
+                'Feeder belum dikonfigurasi. Silakan isi credential Feeder terlebih dahulu.',
+                400,
+            );
+        }
+
+        try {
+            $data = $this->feederService->getData('BiodataMahasiswa', [
+                'nim' => $request->query('nim'),
+            ]);
+
+            return $this->success(
+                ['data' => $data],
+                'Biodata mahasiswa berhasil diambil',
+            );
+        } catch (\Exception $e) {
+            return $this->error(
+                'Gagal mengambil data: '.$e->getMessage(),
+                500,
+            );
+        }
+    }
+
     private function idSemesterFromTahunAkademik(
         \App\Models\TahunAkademik $ta,
     ): string {

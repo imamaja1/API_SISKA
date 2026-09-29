@@ -12,6 +12,8 @@ Route::prefix('api/v1/feeder')->middleware(['log.api', 'log.json:feeder'])->grou
         Route::get('matakuliah', [ValidasiController::class, 'getMatakuliah']);
         Route::get('kelas', [ValidasiController::class, 'getKelas']);
 
+        Route::get('biodata-mahasiswa', [ValidasiController::class, 'getBiodataMahasiswa']);
+
         Route::get('validasi/mahasiswa', [ValidasiController::class, 'validasiMahasiswa']);
         Route::get('validasi/kelas', [ValidasiController::class, 'validasiKelas']);
         Route::get('validasi/semua-mahasiswa', [ValidasiController::class, 'validasiSemuaMahasiswa']);
