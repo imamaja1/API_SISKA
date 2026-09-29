@@ -132,7 +132,7 @@ class KelasController extends Controller
             ->where('k.kelas_id', $kelasId)
             ->select(
                 'k.kelas_id',
-                'k.kode_matakuliah',
+                'mk.kode_matakuliah',
                 'mk.nama_matakuliah',
                 'mk.sks_teori',
                 'mk.sks_praktek',
