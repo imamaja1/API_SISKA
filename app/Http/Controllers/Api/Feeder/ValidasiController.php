@@ -643,12 +643,41 @@ class ValidasiController extends Controller
         try {
             $nim = (string) $request->query('nim');
 
-            $data = $this->feederService->getData('BiodataMahasiswa', [
-                'filter' => "nipd='".str_replace("'", "\\'", $nim)."'",
+            // BiodataMahasiswa tidak memiliki kolom nim/nipd, hanya id_mahasiswa.
+            // NIM ada di ListMahasiswa, jadi resolve id_mahasiswa lewat filter nim dulu.
+            $list = $this->feederService->getData('ListMahasiswa', [
+                'filter' => "nim='".str_replace("'", "\\'", $nim)."'",
                 'order' => '',
                 'limit' => 1,
                 'offset' => 0,
             ]);
+
+            $mahasiswa = $list[0] ?? null;
+
+            if (! $mahasiswa || empty($mahasiswa['id_mahasiswa'])) {
+                return $this->success(
+                    ['data' => []],
+                    'Biodata mahasiswa berhasil diambil',
+                );
+            }
+
+            $idMahasiswa = (string) $mahasiswa['id_mahasiswa'];
+
+            $data = $this->feederService->getData('BiodataMahasiswa', [
+                'filter' => "id_mahasiswa='".str_replace("'", "\\'", $idMahasiswa)."'",
+                'order' => '',
+                'limit' => 1,
+                'offset' => 0,
+            ]);
+
+            // Lengkapi biodata dengan field identitas dari ListMahasiswa (Feeder biodata tidak memuat nim).
+            foreach ($data as &$row) {
+                $row['nim'] = $mahasiswa['nim'] ?? $nim;
+                $row['nama_program_studi'] = $mahasiswa['nama_program_studi'] ?? null;
+                $row['nama_status_mahasiswa'] = $mahasiswa['nama_status_mahasiswa'] ?? null;
+                $row['id_registrasi_mahasiswa'] = $mahasiswa['id_registrasi_mahasiswa'] ?? null;
+            }
+            unset($row);
 
             return $this->success(
                 ['data' => $data],
