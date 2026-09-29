@@ -644,7 +644,7 @@ class ValidasiController extends Controller
             $nim = (string) $request->query('nim');
 
             $data = $this->feederService->getData('BiodataMahasiswa', [
-                'filter' => "nim='".str_replace("'", "\\'", $nim)."'",
+                'filter' => "nipd='".str_replace("'", "\\'", $nim)."'",
                 'order' => '',
                 'limit' => 1,
                 'offset' => 0,
