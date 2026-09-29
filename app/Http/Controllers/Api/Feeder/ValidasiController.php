@@ -672,8 +672,9 @@ class ValidasiController extends Controller
 
             // Tampilkan hanya field yang dibutuhkan.
             // nama_program_studi diambil dari ListMahasiswa (BiodataMahasiswa tidak memuatnya).
-            $data = array_map(function (array $row) use ($mahasiswa) {
+            $data = array_map(function (array $row) use ($mahasiswa, $nim) {
                 return [
+                    'nim' => $mahasiswa['nim'] ?? $nim,
                     'nama_mahasiswa' => $row['nama_mahasiswa'] ?? null,
                     'jenis_kelamin' => $row['jenis_kelamin'] ?? null,
                     'tempat_lahir' => $row['tempat_lahir'] ?? null,
