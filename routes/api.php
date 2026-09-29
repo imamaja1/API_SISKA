@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ApiAuthController;
+use App\Http\Controllers\Api\KelasController;
 use App\Http\Controllers\Api\MahasiswaController;
 use App\Http\Controllers\Api\ProgramStudiController;
 use App\Http\Controllers\Api\TahunAkademikController;
@@ -22,6 +23,10 @@ Route::prefix('v1')->group(function () {
 
         // program studi (api)
         Route::get('program-studi', [ProgramStudiController::class, 'GetProgramStudi']);
+
+        // kelas (api)
+        Route::get('kelas', [KelasController::class, 'index']);
+        Route::get('kelas/detail', [KelasController::class, 'detail']);
 
         // Tahun Akademik
         Route::get('tahun-akademik', [TahunAkademikController::class, 'GetTahunAkademik']);

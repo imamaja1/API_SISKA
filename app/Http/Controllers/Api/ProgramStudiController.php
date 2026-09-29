@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ProgramStudi;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 
 class ProgramStudiController extends Controller
 {
@@ -49,10 +50,18 @@ class ProgramStudiController extends Controller
     public function GetProgramStudi(): JsonResponse
     {
         $programStudi = ProgramStudi::select(
-                            'kode_program_studi',
-                            'nama_program_studi',
-                            'singkatan_program_studi'
-                        )->get();
+            'kode_program_studi',
+            'nama_program_studi',
+            'singkatan_program_studi'
+        )->get()
+            ->map(function ($item) {
+                return [
+                    'kode_program_studi' => $item->kode_program_studi,
+                    'kode_program_studi_enc' => Crypt::encryptString((string) $item->kode_program_studi),
+                    'nama_program_studi' => $item->nama_program_studi,
+                    'singkatan_program_studi' => $item->singkatan_program_studi,
+                ];
+            });
 
         return $this->success(
             ['data' => $programStudi],
