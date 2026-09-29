@@ -670,14 +670,21 @@ class ValidasiController extends Controller
                 'offset' => 0,
             ]);
 
-            // Lengkapi biodata dengan field identitas dari ListMahasiswa (Feeder biodata tidak memuat nim).
-            foreach ($data as &$row) {
-                $row['nim'] = $mahasiswa['nim'] ?? $nim;
-                $row['nama_program_studi'] = $mahasiswa['nama_program_studi'] ?? null;
-                $row['nama_status_mahasiswa'] = $mahasiswa['nama_status_mahasiswa'] ?? null;
-                $row['id_registrasi_mahasiswa'] = $mahasiswa['id_registrasi_mahasiswa'] ?? null;
-            }
-            unset($row);
+            // Tampilkan hanya field yang dibutuhkan.
+            // nama_program_studi diambil dari ListMahasiswa (BiodataMahasiswa tidak memuatnya).
+            $data = array_map(function (array $row) use ($mahasiswa) {
+                return [
+                    'nama_mahasiswa' => $row['nama_mahasiswa'] ?? null,
+                    'jenis_kelamin' => $row['jenis_kelamin'] ?? null,
+                    'tempat_lahir' => $row['tempat_lahir'] ?? null,
+                    'tanggal_lahir' => $row['tanggal_lahir'] ?? null,
+                    'nik' => $row['nik'] ?? null,
+                    'nama_program_studi' => $mahasiswa['nama_program_studi'] ?? null,
+                    'nama_agama' => $row['nama_agama'] ?? null,
+                    'nama_wilayah' => $row['nama_wilayah'] ?? null,
+                    'kelurahan' => $row['kelurahan'] ?? null,
+                ];
+            }, $data);
 
             return $this->success(
                 ['data' => $data],
