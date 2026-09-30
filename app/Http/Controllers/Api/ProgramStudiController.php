@@ -56,8 +56,7 @@ class ProgramStudiController extends Controller
         )->get()
             ->map(function ($item) {
                 return [
-                    'kode_program_studi' => $item->kode_program_studi,
-                    'kode_program_studi_enc' => Crypt::encryptString((string) $item->kode_program_studi),
+                    'kode_program_studi' => Crypt::encryptString((string) $item->kode_program_studi),
                     'nama_program_studi' => $item->nama_program_studi,
                     'singkatan_program_studi' => $item->singkatan_program_studi,
                 ];

@@ -139,9 +139,7 @@ class KelasController extends Controller
                 'mk.sks_praktikum',
                 'nk.nama_kelas',
                 'k.semester',
-                'k.kode_program_studi',
                 'ps.nama_program_studi',
-                'k.kode_tahun_akademik',
                 'ta.tahun_akademik',
                 'ta.semester as semester_ta',
             )
@@ -178,17 +176,10 @@ class KelasController extends Controller
             ->select(
                 'mhs.nim',
                 'mhs.nama_mahasiswa',
-                'mhs.program_studi_kode',
                 'ps.nama_program_studi',
                 'kd.status',
             )
             ->paginate($perPage);
-
-        $mahasiswa->through(function ($row) {
-            $row->nim = Crypt::encryptString((string) $row->nim);
-
-            return $row;
-        });
 
         $kelas->kelas_id = Crypt::encryptString((string) $kelas->kelas_id);
         $kelas->sks = (int) $kelas->sks_teori + (int) $kelas->sks_praktek + (int) $kelas->sks_praktikum;
