@@ -701,6 +701,57 @@ class ValidasiController extends Controller
 
 
     /**
+     * GET /api/v1/feeder/ip-mahasiswa?nim=...
+     * Menampilkan ringkasan perbandingan IPK Feeder vs SISKA.
+     */
+    public function getIpMahasiswa(Request $request): JsonResponse
+    {
+        $request->validate([
+            'nim' => 'required|string',
+        ]);
+
+        if (! $this->feederService->isConfigured()) {
+            return $this->error(
+                'Feeder belum dikonfigurasi. Silakan isi credential Feeder terlebih dahulu.',
+                400,
+            );
+        }
+
+        $nim = (string) $request->query('nim');
+
+        try {
+            $data = $this->prosesIpkMahasiswa($nim);
+
+            return $this->success(
+                [
+                    'data' => [
+                        'mahasiswa' => $data['mahasiswa'],
+                        'ipk_feeder' => $data['ipk_feeder'],
+                        'ipk_siska' => $data['ipk_siska'],
+                        'komparasi' => $data['komparasi'],
+                    ],
+                ],
+                'Data IPK mahasiswa berhasil diambil',
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->error(
+                'Mahasiswa dengan NIM '.$nim.' tidak ditemukan di SISKA.',
+                404,
+            );
+        } catch (\InvalidArgumentException $e) {
+            return $this->error(
+                $e->getMessage(),
+                404,
+            );
+        } catch (\Exception $e) {
+            return $this->error(
+                'Gagal mengambil data IPK: '.$e->getMessage(),
+                500,
+            );
+        }
+    }
+
+    /**
      * GET /api/v1/feeder/validasi/ipk?nim=...
      * GET /api/v1/feeder/transkrip-mahasiswa?nim=...
      * Menampilkan komparasi lengkap beserta seluruh list transkrip matakuliah.
