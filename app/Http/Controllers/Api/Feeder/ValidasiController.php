@@ -720,7 +720,7 @@ class ValidasiController extends Controller
         $nim = (string) $request->query('nim');
 
         try {
-            $data = $this->prosesIpkMahasiswa($nim);
+            $data = $this->prosesIpkMahasiswa($nim, false);
 
             return $this->success(
                 [
@@ -772,7 +772,7 @@ class ValidasiController extends Controller
         $nim = (string) $request->query('nim');
 
         try {
-            $data = $this->prosesIpkMahasiswa($nim);
+            $data = $this->prosesIpkMahasiswa($nim, true);
 
             return $this->success(
                 ['data' => $data],
@@ -798,8 +798,19 @@ class ValidasiController extends Controller
 
     /**
      * Helper pemrosesan IPK Feeder vs SISKA
+     *
+     * Strategi:
+     * 1. Eksekusi IP Feeder:
+     *    - Tarik DetailNilaiPerkuliahanKelas (filter: nim) + TranskripMahasiswa (filter: id_registrasi_mahasiswa)
+     *    - Konsolidasi best grade di memori PHP -> kalkulasi IPK Feeder
+     * 2. Eksekusi IP SISKA:
+     *    - Single query SQL JOIN seluruh riwayat KRS & KHS
+     *    - Konsolidasi best grade di memori PHP -> kalkulasi IPK SISKA
+     * 3. Komparasi IP Feeder vs SISKA:
+     *    - Cek selisih IPK, selisih SKS, dan status kesesuaian
+     *    - Hanya lakukan pencocokan per-matakuliah jika $withDetail = true
      */
-    private function prosesIpkMahasiswa(string $nim): array
+    private function prosesIpkMahasiswa(string $nim, bool $withDetail = false): array
     {
         $mahasiswa = Mahasiswa::with('programStudi')->where('nim', $nim)->first();
 
@@ -807,8 +818,28 @@ class ValidasiController extends Controller
             throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
         }
 
-        // 1. Dapatkan id_registrasi_mahasiswa dari Feeder
-        $idRegistrasiMahasiswa = $this->getIdRegistrasiMahasiswa($nim);
+        $safeNim = str_replace("'", "\\'", $nim);
+
+        // 1. Eksekusi Data Feeder
+        $detailNilaiKelas = [];
+        $idRegistrasiMahasiswa = null;
+
+        try {
+            $detailNilaiKelas = $this->feederService->getData('DetailNilaiPerkuliahanKelas', [
+                'filter' => "nim='{$safeNim}'",
+                'limit' => 500,
+                'offset' => 0,
+            ]);
+            if (! empty($detailNilaiKelas[0]['id_registrasi_mahasiswa'])) {
+                $idRegistrasiMahasiswa = (string) $detailNilaiKelas[0]['id_registrasi_mahasiswa'];
+            }
+        } catch (\Throwable $e) {
+            // Lanjut jika endpoint kelas gagal
+        }
+
+        if (! $idRegistrasiMahasiswa) {
+            $idRegistrasiMahasiswa = $this->getIdRegistrasiMahasiswa($nim);
+        }
 
         if (! $idRegistrasiMahasiswa) {
             throw new \InvalidArgumentException(
@@ -816,22 +847,60 @@ class ValidasiController extends Controller
             );
         }
 
-        // 2. Ambil seluruh data Transkrip dari Feeder (GetTranskripMahasiswa dengan pagination loop)
-        $safeIdRegMhs = str_replace("'", "\\'", $idRegistrasiMahasiswa);
-        $feederTranskripRaw = $this->feederService->getDataAll('TranskripMahasiswa', [
-            'filter' => "id_registrasi_mahasiswa='{$safeIdRegMhs}'",
-        ]);
+        $transkripRaw = [];
+        try {
+            $safeIdRegMhs = str_replace("'", "\\'", $idRegistrasiMahasiswa);
+            $transkripRaw = $this->feederService->getData('TranskripMahasiswa', [
+                'filter' => "id_registrasi_mahasiswa='{$safeIdRegMhs}'",
+                'limit' => 500,
+                'offset' => 0,
+            ]);
+        } catch (\Throwable $e) {
+            // Lanjut jika TranskripMahasiswa kosong/gagal
+        }
 
-        // 3. Proses Transkrip & IPK Feeder
-        $totalSksFeeder = 0.0;
-        $totalBobotSksFeeder = 0.0;
-        $transkripFeeder = [];
+        // Konsolidasi Nilai Feeder di Memori (In-Memory Best Grade)
+        $feederConsolidated = [];
 
-        foreach ($feederTranskripRaw as $row) {
+        // Masukkan data DetailNilaiPerkuliahanKelas (Reguler)
+        foreach ($detailNilaiKelas as $row) {
+            $kode = trim((string) ($row['kode_mata_kuliah'] ?? $row['kode_matkul'] ?? ''));
+            if ($kode === '') {
+                continue;
+            }
             $sks = (float) ($row['sks_mata_kuliah'] ?? $row['sks'] ?? 0);
             $indeks = (float) ($row['nilai_indeks'] ?? $row['bobot_indeks'] ?? 0);
-            $totalSksFeeder += $sks;
-            $totalBobotSksFeeder += ($sks * $indeks);
+            $nilaiAngka = isset($row['nilai_angka']) ? (float) $row['nilai_angka'] : null;
+            $nilaiHuruf = $row['nilai_huruf'] ?? null;
+            $nama = trim((string) ($row['nama_mata_kuliah'] ?? $row['nama_matkul'] ?? ''));
+
+            if (! isset($feederConsolidated[$kode]) || $indeks > $feederConsolidated[$kode]['nilai_indeks']) {
+                $feederConsolidated[$kode] = [
+                    'kode_mata_kuliah' => $kode,
+                    'nama_mata_kuliah' => $nama,
+                    'sks' => $sks,
+                    'nilai_angka' => $nilaiAngka,
+                    'nilai_huruf' => $nilaiHuruf,
+                    'nilai_indeks' => $indeks,
+                    'jenis' => 'Reguler',
+                    'id_kelas_kuliah' => $row['id_kelas_kuliah'] ?? null,
+                    'id_nilai_transfer' => null,
+                    'id_konversi_aktivitas' => null,
+                ];
+            }
+        }
+
+        // Masukkan data TranskripMahasiswa (Transfer, Konversi MBKM/RPL, atau Transkrip Resmi)
+        foreach ($transkripRaw as $row) {
+            $kode = trim((string) ($row['kode_mata_kuliah'] ?? $row['kode_matkul'] ?? ''));
+            if ($kode === '') {
+                continue;
+            }
+            $sks = (float) ($row['sks_mata_kuliah'] ?? $row['sks'] ?? 0);
+            $indeks = (float) ($row['nilai_indeks'] ?? $row['bobot_indeks'] ?? 0);
+            $nilaiAngka = isset($row['nilai_angka']) ? (float) $row['nilai_angka'] : null;
+            $nilaiHuruf = $row['nilai_huruf'] ?? null;
+            $nama = trim((string) ($row['nama_mata_kuliah'] ?? $row['nama_matkul'] ?? ''));
 
             $jenis = 'Reguler';
             if (! empty($row['id_nilai_transfer'])) {
@@ -840,60 +909,81 @@ class ValidasiController extends Controller
                 $jenis = 'Konversi Aktivitas';
             }
 
-            $transkripFeeder[] = [
-                'kode_mata_kuliah' => $row['kode_mata_kuliah'] ?? $row['kode_matkul'] ?? null,
-                'nama_mata_kuliah' => $row['nama_mata_kuliah'] ?? $row['nama_matkul'] ?? null,
-                'sks' => $sks,
-                'nilai_angka' => isset($row['nilai_angka']) ? (float) $row['nilai_angka'] : null,
-                'nilai_huruf' => $row['nilai_huruf'] ?? null,
-                'nilai_indeks' => $indeks,
-                'jenis' => $jenis,
-                'id_kelas_kuliah' => $row['id_kelas_kuliah'] ?? null,
-                'id_nilai_transfer' => $row['id_nilai_transfer'] ?? null,
-                'id_konversi_aktivitas' => $row['id_konversi_aktivitas'] ?? null,
-            ];
+            if (! isset($feederConsolidated[$kode]) || $indeks > $feederConsolidated[$kode]['nilai_indeks']) {
+                $feederConsolidated[$kode] = [
+                    'kode_mata_kuliah' => $kode,
+                    'nama_mata_kuliah' => $nama,
+                    'sks' => $sks,
+                    'nilai_angka' => $nilaiAngka,
+                    'nilai_huruf' => $nilaiHuruf,
+                    'nilai_indeks' => $indeks,
+                    'jenis' => $jenis,
+                    'id_kelas_kuliah' => $row['id_kelas_kuliah'] ?? null,
+                    'id_nilai_transfer' => $row['id_nilai_transfer'] ?? null,
+                    'id_konversi_aktivitas' => $row['id_konversi_aktivitas'] ?? null,
+                ];
+            }
+        }
+
+        $transkripFeeder = array_values($feederConsolidated);
+        $totalSksFeeder = 0.0;
+        $totalBobotSksFeeder = 0.0;
+
+        foreach ($transkripFeeder as $f) {
+            $totalSksFeeder += $f['sks'];
+            $totalBobotSksFeeder += ($f['sks'] * $f['nilai_indeks']);
         }
 
         $ipkFeeder = $totalSksFeeder > 0 ? round($totalBobotSksFeeder / $totalSksFeeder, 2) : 0.00;
 
-        // 4. Ambil dan Proses Transkrip & IPK SISKA
-        $siskaData = $this->getDataSiskaTranskrip($nim);
-        $totalSksSiska = 0.0;
-        $totalBobotSksSiska = 0.0;
-        $transkripSiska = [];
+        // 2. Eksekusi Data SISKA (Single Query + In-Memory Best Grade)
+        $siskaRaw = $this->getDataSiskaTranskrip($nim);
+        $siskaConsolidated = [];
 
-        foreach ($siskaData as $s) {
+        foreach ($siskaRaw as $s) {
+            $kode = trim((string) $s->kode_matakuliah);
+            if ($kode === '') {
+                continue;
+            }
             $sks = (float) ($s->total_sks > 0 ? $s->total_sks : $s->sks_teori);
             $bobot = (float) ($s->bobot_nilai ?? 0);
-            $totalSksSiska += $sks;
-            $totalBobotSksSiska += ($sks * $bobot);
+            $nilaiAkhir = $s->nilai_akhir !== null ? (float) $s->nilai_akhir : null;
 
-            $transkripSiska[] = [
-                'kode_matakuliah' => $s->kode_matakuliah,
-                'nama_matakuliah' => $s->nama_matakuliah,
-                'sks' => $sks,
-                'nilai_akhir' => $s->nilai_akhir !== null ? (float) $s->nilai_akhir : null,
-                'grade' => $s->grade,
-                'bobot' => $bobot,
-                'tahun_akademik' => $s->tahun_akademik,
-                'semester' => $s->semester_ta === '1' ? 'Ganjil' : ($s->semester_ta === '0' || $s->semester_ta === '2' ? 'Genap' : $s->semester_ta),
-            ];
+            // Jika ada pengulangan matakuliah, ambil yang berbobot tertinggi
+            if (! isset($siskaConsolidated[$kode]) || $bobot > $siskaConsolidated[$kode]['bobot']) {
+                $siskaConsolidated[$kode] = [
+                    'kode_matakuliah' => $kode,
+                    'nama_matakuliah' => $s->nama_matakuliah,
+                    'sks' => $sks,
+                    'nilai_akhir' => $nilaiAkhir,
+                    'grade' => $s->grade,
+                    'bobot' => $bobot,
+                    'tahun_akademik' => $s->tahun_akademik,
+                    'semester' => $s->semester_ta === '1' ? 'Ganjil' : ($s->semester_ta === '0' || $s->semester_ta === '2' ? 'Genap' : $s->semester_ta),
+                ];
+            }
+        }
+
+        $transkripSiska = array_values($siskaConsolidated);
+        $totalSksSiska = 0.0;
+        $totalBobotSksSiska = 0.0;
+
+        foreach ($transkripSiska as $s) {
+            $totalSksSiska += $s['sks'];
+            $totalBobotSksSiska += ($s['sks'] * $s['bobot']);
         }
 
         $ipkSiska = $totalSksSiska > 0 ? round($totalBobotSksSiska / $totalSksSiska, 2) : 0.00;
 
-        // 5. Komparasi Detail per Matakuliah
-        $detailPerbandingan = $this->bandingkanTranskrip($transkripFeeder, $transkripSiska);
-
+        // 3. Cek Kesesuaian IP & SKS
         $selisihIpk = round(abs($ipkFeeder - $ipkSiska), 2);
         $selisihSks = abs($totalSksFeeder - $totalSksSiska);
         $isSinkron = ($ipkFeeder === $ipkSiska && (int) $totalSksFeeder === (int) $totalSksSiska);
 
-        return [
+        $result = [
             'mahasiswa' => [
                 'nim' => $nim,
                 'nama_mahasiswa' => $mahasiswa->nama_mahasiswa,
-                'id_registrasi_mahasiswa' => $idRegistrasiMahasiswa,
                 'nama_program_studi' => $mahasiswa->programStudi->nama_program_studi ?? null,
             ],
             'ipk_feeder' => [
@@ -913,10 +1003,15 @@ class ValidasiController extends Controller
                 'selisih_sks' => $selisihSks,
                 'status' => $isSinkron ? 'sinkron' : 'belum_sinkron',
             ],
-            'transkrip_feeder' => $transkripFeeder,
-            'transkrip_siska' => $transkripSiska,
-            'detail_perbandingan' => $detailPerbandingan,
         ];
+
+        if ($withDetail) {
+            $result['transkrip_feeder'] = $transkripFeeder;
+            $result['transkrip_siska'] = $transkripSiska;
+            $result['detail_perbandingan'] = $this->bandingkanTranskrip($feederConsolidated, $siskaConsolidated);
+        }
+
+        return $result;
     }
 
     private function getIdRegistrasiMahasiswa(string $nim): ?string
@@ -1052,71 +1147,149 @@ class ValidasiController extends Controller
             ->toArray();
     }
 
-    private function bandingkanTranskrip(array $transkripFeeder, array $transkripSiska): array
+    /**
+     * In-Memory Hash Matching 2 Tahap:
+     * Tahap 1: Pencocokan eksak berdasarkan kode mata kuliah (O(1))
+     * Tahap 2: Pencocokan berbasis normalisasi nama mata kuliah (mengakomodasi pergantian kode kurikulum)
+     */
+    private function bandingkanTranskrip(array $feederMap, array $siskaMap): array
     {
-        $feederMap = [];
-        foreach ($transkripFeeder as $f) {
-            $kode = trim((string) ($f['kode_mata_kuliah'] ?? ''));
-            if ($kode !== '') {
-                $feederMap[$kode] = $f;
-            }
-        }
-
-        $siskaMap = [];
-        foreach ($transkripSiska as $s) {
-            $kode = trim((string) ($s['kode_matakuliah'] ?? ''));
-            if ($kode !== '') {
-                $siskaMap[$kode] = $s;
-            }
-        }
-
-        $allKeys = array_unique(array_merge(array_keys($feederMap), array_keys($siskaMap)));
         $detail = [];
+        $matchedFeederKeys = [];
+        $matchedSiskaKeys = [];
 
-        foreach ($allKeys as $kode) {
-            $f = $feederMap[$kode] ?? null;
-            $s = $siskaMap[$kode] ?? null;
+        // --- TAHAP 1: Match Eksak by Kode Matakuliah O(1) ---
+        foreach ($siskaMap as $sKode => $s) {
+            if (isset($feederMap[$sKode])) {
+                $f = $feederMap[$sKode];
+                $matchedSiskaKeys[$sKode] = true;
+                $matchedFeederKeys[$sKode] = true;
 
-            $namaMatkul = $s['nama_matakuliah'] ?? $f['nama_mata_kuliah'] ?? '-';
-            $sksSiska = $s['sks'] ?? null;
-            $sksFeeder = $f['sks'] ?? null;
-            $gradeSiska = $s['grade'] ?? null;
-            $gradeFeeder = $f['nilai_huruf'] ?? null;
-            $bobotSiska = $s['bobot'] ?? null;
-            $bobotFeeder = $f['nilai_indeks'] ?? null;
+                $detail[] = $this->buildPerbandinganRow(
+                    $sKode,
+                    ! empty($f['nama_mata_kuliah']) ? $f['nama_mata_kuliah'] : $s['nama_matakuliah'],
+                    $s,
+                    $f
+                );
+            }
+        }
 
-            $status = 'sudah_sync';
-            if (! $f && $s) {
-                $status = 'hanya_di_siska';
-            } elseif ($f && ! $s) {
-                $status = 'hanya_di_feeder';
-            } elseif ($gradeSiska !== $gradeFeeder || $sksSiska != $sksFeeder) {
-                $status = 'belum_sync';
+        // --- TAHAP 2: Match Normalisasi Nama Matakuliah untuk sisa yang belum match ---
+        $unmatchedFeederByName = [];
+        foreach ($feederMap as $fKode => $f) {
+            if (! isset($matchedFeederKeys[$fKode])) {
+                $normName = $this->normalizeNamaMatakuliah($f['nama_mata_kuliah'] ?? '');
+                if ($normName !== '') {
+                    $unmatchedFeederByName[$normName] = $fKode;
+                }
+            }
+        }
+
+        foreach ($siskaMap as $sKode => $s) {
+            if (isset($matchedSiskaKeys[$sKode])) {
+                continue;
             }
 
-            $detail[] = [
-                'kode_matakuliah' => $kode,
-                'nama_matakuliah' => $namaMatkul,
-                'siska' => $s ? [
-                    'sks' => $sksSiska,
-                    'nilai_akhir' => $s['nilai_akhir'],
-                    'grade' => $gradeSiska,
-                    'bobot' => $bobotSiska,
-                    'tahun_akademik' => $s['tahun_akademik'],
-                    'semester' => $s['semester'],
-                ] : null,
-                'feeder' => $f ? [
-                    'sks' => $sksFeeder,
-                    'nilai_angka' => $f['nilai_angka'],
-                    'nilai_huruf' => $gradeFeeder,
-                    'nilai_indeks' => $bobotFeeder,
-                    'jenis' => $f['jenis'],
-                ] : null,
-                'status' => $status,
-            ];
+            $sNormName = $this->normalizeNamaMatakuliah($s['nama_matakuliah'] ?? '');
+            if ($sNormName !== '' && isset($unmatchedFeederByName[$sNormName])) {
+                $fKode = $unmatchedFeederByName[$sNormName];
+                $f = $feederMap[$fKode];
+
+                $matchedSiskaKeys[$sKode] = true;
+                $matchedFeederKeys[$fKode] = true;
+                unset($unmatchedFeederByName[$sNormName]); // 1-to-1 match
+
+                $detail[] = $this->buildPerbandinganRow(
+                    $sKode,
+                    $s['nama_matakuliah'],
+                    $s,
+                    $f,
+                    $fKode
+                );
+            }
         }
+
+        // --- Sisanya: Hanya di SISKA ---
+        foreach ($siskaMap as $sKode => $s) {
+            if (! isset($matchedSiskaKeys[$sKode])) {
+                $detail[] = $this->buildPerbandinganRow(
+                    $sKode,
+                    $s['nama_matakuliah'],
+                    $s,
+                    null
+                );
+            }
+        }
+
+        // --- Sisanya: Hanya di Feeder ---
+        foreach ($feederMap as $fKode => $f) {
+            if (! isset($matchedFeederKeys[$fKode])) {
+                $detail[] = $this->buildPerbandinganRow(
+                    $fKode,
+                    $f['nama_mata_kuliah'] ?? '-',
+                    null,
+                    $f
+                );
+            }
+        }
+
+        // Urutkan berdasarkan nama matakuliah agar konsisten dan rapi
+        usort($detail, fn ($a, $b) => strcmp((string) ($a['nama_matakuliah'] ?? ''), (string) ($b['nama_matakuliah'] ?? '')));
 
         return $detail;
+    }
+
+    private function buildPerbandinganRow(string $kode, string $namaMatkul, ?array $s, ?array $f, ?string $fKode = null): array
+    {
+        $sksSiska = $s['sks'] ?? null;
+        $sksFeeder = $f['sks'] ?? null;
+        $gradeSiska = $s['grade'] ?? null;
+        $gradeFeeder = $f['nilai_huruf'] ?? null;
+        $bobotSiska = $s['bobot'] ?? null;
+        $bobotFeeder = $f['nilai_indeks'] ?? null;
+
+        $status = 'sudah_sync';
+        if (! $f && $s) {
+            $status = 'hanya_di_siska';
+        } elseif ($f && ! $s) {
+            $status = 'hanya_di_feeder';
+        } elseif ($gradeSiska !== $gradeFeeder || $sksSiska != $sksFeeder) {
+            $status = 'belum_sync';
+        }
+
+        return [
+            'kode_matakuliah' => $kode,
+            'kode_matakuliah_feeder' => $fKode ?? ($f['kode_mata_kuliah'] ?? null),
+            'nama_matakuliah' => $namaMatkul,
+            'siska' => $s ? [
+                'sks' => $sksSiska,
+                'nilai_akhir' => $s['nilai_akhir'],
+                'grade' => $gradeSiska,
+                'bobot' => $bobotSiska,
+                'tahun_akademik' => $s['tahun_akademik'],
+                'semester' => $s['semester'],
+            ] : null,
+            'feeder' => $f ? [
+                'sks' => $sksFeeder,
+                'nilai_angka' => $f['nilai_angka'],
+                'nilai_huruf' => $gradeFeeder,
+                'nilai_indeks' => $bobotFeeder,
+                'jenis' => $f['jenis'],
+            ] : null,
+            'status' => $status,
+        ];
+    }
+
+    private function normalizeNamaMatakuliah(?string $name): string
+    {
+        if (! $name) {
+            return '';
+        }
+        $name = mb_strtolower($name, 'UTF-8');
+        $name = str_replace(['&', '+'], [' dan ', ' plus '], $name);
+        $name = preg_replace('/[^a-z0-9]/', '', $name);
+
+        return trim($name);
     }
 
     private function idSemesterFromTahunAkademik(
