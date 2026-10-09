@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -70,6 +71,11 @@ class Mahasiswa extends Authenticatable
     public function nama_prodi(): HasOne
     {
         return $this->hasOne(ProgramStudi::class, 'kode_program_studi', 'program_studi_kode')->select('kode_program_studi', 'nama_program_studi');
+    }
+
+    public function programStudi(): BelongsTo
+    {
+        return $this->belongsTo(ProgramStudi::class, 'program_studi_kode', 'kode_program_studi');
     }
 
     public function krs()
