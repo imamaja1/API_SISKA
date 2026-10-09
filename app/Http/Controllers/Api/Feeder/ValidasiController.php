@@ -883,9 +883,6 @@ class ValidasiController extends Controller
                     'nilai_huruf' => $nilaiHuruf,
                     'nilai_indeks' => $indeks,
                     'jenis' => 'Reguler',
-                    'id_kelas_kuliah' => $row['id_kelas_kuliah'] ?? null,
-                    'id_nilai_transfer' => null,
-                    'id_konversi_aktivitas' => null,
                 ];
             }
         }
@@ -918,9 +915,6 @@ class ValidasiController extends Controller
                     'nilai_huruf' => $nilaiHuruf,
                     'nilai_indeks' => $indeks,
                     'jenis' => $jenis,
-                    'id_kelas_kuliah' => $row['id_kelas_kuliah'] ?? null,
-                    'id_nilai_transfer' => $row['id_nilai_transfer'] ?? null,
-                    'id_konversi_aktivitas' => $row['id_konversi_aktivitas'] ?? null,
                 ];
             }
         }
