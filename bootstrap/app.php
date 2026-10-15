@@ -23,6 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Enable Sanctum SPA cookie auth for stateful domains (session + CSRF on API routes).
         $middleware->statefulApi();
 
+        $middleware->validateCsrfTokens(except: [
+            'api-panel/proxy',
+        ]);
+
         $middleware->alias([
             'dosen' => \App\Http\Middleware\EnsureDosenToken::class,
             'role' => \App\Http\Middleware\EnsureRole::class,

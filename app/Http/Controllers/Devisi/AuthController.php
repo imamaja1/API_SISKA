@@ -51,38 +51,24 @@ class AuthController extends Controller
             }
         }
         $datapengguna = $item;
-        // Sanctum SPA Cookie (session-based) login.
-        Auth::guard("auth_divisi_siska")->login($datapengguna);
-
-        // Session is only available for stateful SPA requests (cookie + CSRF).
-        if (!$this->requestHasSessionStore($request)) {
-            Auth::guard("auth_divisi_siska")->logout();
-
-            $payload = [
-                "status" => false,
-                "message" =>
-                    "Session not available. Use Sanctum SPA cookie auth (call /sanctum/csrf-cookie, send credentials, and ensure your domain is in SANCTUM_STATEFUL_DOMAINS).",
-            ];
-
-            if (config("app.debug")) {
-                $payload["debug"] = [
-                    "origin" => $request->headers->get("origin"),
-                    "referer" => $request->headers->get("referer"),
-                    "host" => $request->getHost(),
-                    "has_session" => $this->requestHasSessionStore($request),
-                    "cookie_names" => array_keys($request->cookies->all()),
-                ];
-            }
-
-            return response()->json($payload, 400);
+        // Sanctum SPA Cookie (session-based) login if session is available.
+        if ($this->requestHasSessionStore($request)) {
+            Auth::guard("auth_divisi_siska")->login($datapengguna);
+            $request->session()->regenerate();
         }
 
-        $request->session()->regenerate();
+        $token = $datapengguna->createToken('divisi-token')->plainTextToken;
 
         return response()->json(
             [
                 "status" => true,
                 "message" => "Login successful",
+                "token" => $token,
+                "user" => [
+                    "kode_pengguna" => $datapengguna->kode_pengguna,
+                    "nama_login" => $datapengguna->nama_login,
+                    "nama_pengguna" => $datapengguna->nama_pengguna,
+                ],
             ],
             200,
         );

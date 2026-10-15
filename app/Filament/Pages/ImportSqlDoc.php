@@ -537,6 +537,10 @@ class ImportSqlDoc extends Page implements HasForms
             return null;
         }
 
+        if (in_array(strtoupper($literal), ['NOW()', 'CURRENT_TIMESTAMP', 'CURRENT_TIMESTAMP()'], true)) {
+            return date('Y-m-d H:i:s');
+        }
+
         if (preg_match('/^[+-]?\d+$/', $literal)) {
             return (int) $literal;
         }

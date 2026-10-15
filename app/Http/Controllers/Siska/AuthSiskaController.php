@@ -43,36 +43,24 @@ class AuthSiskaController extends Controller
             ], 401);
         }
 
-        // Sanctum SPA Cookie (session-based) login.
-        Auth::guard('auth_mhs_siska')->login($data);
-
-        // Session is only available for stateful SPA requests (cookie + CSRF).
-        if (! $this->requestHasSessionStore($request)) {
-            Auth::guard('auth_mhs_siska')->logout();
-
-            $payload = [
-                'status' => false,
-                'message' => 'Session not available. Use Sanctum SPA cookie auth (call /sanctum/csrf-cookie, send credentials, and ensure your domain is in SANCTUM_STATEFUL_DOMAINS).',
-            ];
-
-            if (config('app.debug')) {
-                $payload['debug'] = [
-                    'origin' => $request->headers->get('origin'),
-                    'referer' => $request->headers->get('referer'),
-                    'host' => $request->getHost(),
-                    'has_session' => $this->requestHasSessionStore($request),
-                    'cookie_names' => array_keys($request->cookies->all()),
-                ];
-            }
-
-            return response()->json($payload, 400);
+        // Sanctum SPA Cookie (session-based) login if session is available.
+        if ($this->requestHasSessionStore($request)) {
+            Auth::guard('auth_mhs_siska')->login($data);
+            $request->session()->regenerate();
         }
 
-        $request->session()->regenerate();
+        $token = $data->createToken('siska-token')->plainTextToken;
 
         return response()->json([
             'status' => true,
             'message' => 'Login successful',
+            'token' => $token,
+            'user' => [
+                'nim' => $data->nim,
+                'nama_mahasiswa' => $data->nama_mahasiswa,
+                'email' => $data->email,
+                'status' => $data->status,
+            ],
         ], 200);
     }
 

@@ -42,7 +42,7 @@ class UniversalController extends Controller
             ], 400);
         }
 
-        return $this->servis->getTahunAkademikByKode($kode);
+        return $this->servisTahunAkademik->getTahunAkademikByKode($kode);
     }
 
     public function program_studi()

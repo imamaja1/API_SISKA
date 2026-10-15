@@ -87,6 +87,7 @@ class MahasiswaController extends Controller
 
     public function show(Request $request): JsonResponse
     {
+        $nim = $request->input('nim') ?: $request->query('nim');
         $mahasiswa = Mahasiswa::query()->where('nim', $nim)->first();
 
         if ($mahasiswa === null) {
