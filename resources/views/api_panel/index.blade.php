@@ -247,10 +247,13 @@
             <div class="p-2.5 bg-[#060a13] border-t border-slate-800/80 text-[11px] font-mono flex-shrink-0">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 glow-dot animate-pulse"></span>
-                        <span class="text-slate-400 font-semibold tracking-wider text-[10px]">API GATEWAY STATUS</span>
+                        <span id="gatewayStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 glow-dot animate-pulse"></span>
+                        <span class="text-slate-400 font-semibold tracking-wider text-[10px]">API GATEWAY</span>
                     </div>
-                    <span class="text-emerald-400 font-bold">OK</span>
+                    <div class="flex items-center space-x-2">
+                        <span id="gatewayPingLatency" class="text-[10px] text-slate-400 font-mono">--ms</span>
+                        <span id="gatewayStatusLabel" class="text-emerald-400 font-bold text-[10px]">ONLINE</span>
+                    </div>
                 </div>
                 <div class="flex items-center justify-between text-slate-500 mt-1 text-[10px]">
                     <span>Engine: Laravel {{ app()->version() }}</span>
@@ -349,18 +352,34 @@
                 </div>
             </div>
 
-            <!-- Request Parameters Section -->
-            <div class="mt-7">
+            <!-- Request Parameters Section (Query & Path for GET / DELETE) -->
+            <div id="docParamsSection" class="mt-7">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-800">
                     <div class="flex items-center space-x-2">
                         <span class="w-1.5 h-3.5 bg-blue-500 rounded-sm"></span>
-                        <h2 class="text-sm font-bold text-white tracking-tight">Request Parameters (Query &amp; Path)</h2>
+                        <h2 id="docParamsHeading" class="text-sm font-bold text-white tracking-tight">Request Parameters (Query &amp; Path)</h2>
                     </div>
-                    <span class="text-[10px] font-mono text-slate-500">URL Parameters</span>
+                    <span id="docParamsBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800/50">URL Parameters</span>
                 </div>
+                <!-- Parameters 5-Column Table -->
+                <div id="docParamsTableContainer" class="mt-2.5 overflow-hidden rounded border border-slate-800 hidden">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-900/80 text-[10px] font-mono text-slate-400 border-b border-slate-800 uppercase tracking-wider">
+                                <th class="py-2 px-3 font-semibold">FIELD</th>
+                                <th class="py-2 px-3 font-semibold">TIPE</th>
+                                <th class="py-2 px-3 font-semibold">VALIDASI</th>
+                                <th class="py-2 px-3 font-semibold">CONTOH / DESKRIPSI</th>
+                                <th class="py-2 px-3 font-semibold">ASAL NILAI (SOURCE)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="docParamsTableBody" class="divide-y divide-slate-800/80 font-mono text-[11px]"></tbody>
+                    </table>
+                </div>
+                <!-- Raw Parameters Block -->
                 <div class="mt-2.5 bg-[#060a13] border border-slate-800 rounded">
                     <div class="flex items-center justify-between px-3 py-1.5 border-b border-slate-800/80 bg-slate-900/40 text-[11px] text-slate-400 font-mono">
-                        <span>Parameters Schema</span>
+                        <span id="docParamsSchemaLabel">Parameters Schema</span>
                         <button id="btnCopyParams" class="text-slate-400 hover:text-white flex items-center space-x-1 cursor-pointer transition" type="button">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
@@ -372,33 +391,34 @@
                 </div>
             </div>
 
-            <!-- Request Body Schema Section -->
+            <!-- Request Body Schema Section (JSON Payload for POST / PUT / PATCH) -->
             <div id="docBodySection" class="mt-7 hidden">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-800">
                     <div class="flex items-center space-x-2">
                         <span class="w-1.5 h-3.5 bg-emerald-500 rounded-sm"></span>
-                        <h2 class="text-sm font-bold text-white tracking-tight">Request Body Schema (JSON Payload)</h2>
+                        <h2 id="docBodyHeading" class="text-sm font-bold text-white tracking-tight">Request Body (JSON Schema)</h2>
                     </div>
-                    <span class="text-[10px] font-mono text-slate-500">application/json</span>
+                    <span id="docBodyBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/50">application/json</span>
                 </div>
-                <!-- Body Fields Structure Table -->
+                <!-- Body 5-Column Table -->
                 <div id="docBodyTableContainer" class="mt-2.5 overflow-hidden rounded border border-slate-800">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-slate-900/80 text-[10px] font-mono text-slate-400 border-b border-slate-800 uppercase tracking-wider">
-                                <th class="py-2 px-3 font-semibold">FIELD KEY</th>
-                                <th class="py-2 px-3 font-semibold">TIPE DATA</th>
-                                <th class="py-2 px-3 font-semibold">STATUS</th>
-                                <th class="py-2 px-3 font-semibold">CONTOH NILAI</th>
+                                <th class="py-2 px-3 font-semibold">FIELD</th>
+                                <th class="py-2 px-3 font-semibold">TIPE</th>
+                                <th class="py-2 px-3 font-semibold">VALIDASI</th>
+                                <th class="py-2 px-3 font-semibold">CONTOH / DESKRIPSI</th>
+                                <th class="py-2 px-3 font-semibold">ASAL NILAI (SOURCE)</th>
                             </tr>
                         </thead>
                         <tbody id="docBodyTableBody" class="divide-y divide-slate-800/80 font-mono text-[11px]"></tbody>
                     </table>
                 </div>
-                <!-- Raw JSON Body block -->
+                <!-- Raw JSON Body Block -->
                 <div class="mt-2.5 bg-[#060a13] border border-slate-800 rounded">
                     <div class="flex items-center justify-between px-3 py-1.5 border-b border-slate-800/80 bg-slate-900/40 text-[11px] text-slate-400 font-mono">
-                        <span>Raw JSON Body Example</span>
+                        <span>Payload Schema</span>
                         <button id="btnCopyBody" class="text-slate-400 hover:text-white flex items-center space-x-1 cursor-pointer transition" type="button">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
@@ -421,6 +441,7 @@
                     <div class="flex space-x-1 font-mono text-[10px]" id="responseStatusTabs">
                         <button data-status="200" class="resp-status-btn px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold transition cursor-pointer" type="button">200 OK</button>
                         <button data-status="401" class="resp-status-btn px-2 py-0.5 rounded bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer" type="button">401 Unauthorized</button>
+                        <button data-status="403" class="resp-status-btn px-2 py-0.5 rounded bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer" type="button">403 Forbidden</button>
                         <button data-status="422" class="resp-status-btn px-2 py-0.5 rounded bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer" type="button">422 Unprocessable</button>
                     </div>
                 </div>
@@ -506,11 +527,27 @@
             <div class="px-3 border-b border-slate-800 flex justify-between items-center text-xs flex-shrink-0">
                 <div class="flex space-x-4 font-medium" id="testerRequestTabs">
                     <button data-tab="params" class="tester-tab-btn py-2 text-white border-b-2 border-blue-500 font-medium cursor-pointer transition" type="button">Params</button>
-                    <button data-tab="body" class="tester-tab-btn py-2 text-slate-400 hover:text-slate-200 cursor-pointer transition" type="button">Body</button>
+                    <button data-tab="body" class="tester-tab-btn py-2 text-slate-400 hover:text-slate-200 cursor-pointer transition flex items-center space-x-1" type="button">
+                        <span>Body</span>
+                        <span id="tabBodyIndicator" class="w-1.5 h-1.5 rounded-full bg-amber-400 hidden"></span>
+                    </button>
                     <button data-tab="headers" class="tester-tab-btn py-2 text-slate-400 hover:text-slate-200 cursor-pointer transition" type="button">Headers</button>
-                    <button data-tab="cookies" class="tester-tab-btn py-2 text-slate-400 hover:text-slate-200 cursor-pointer transition" type="button">Cookies Debug</button>
+                    <button data-tab="cookies" class="tester-tab-btn py-2 text-slate-400 hover:text-slate-200 cursor-pointer transition flex items-center space-x-1" type="button">
+                        <span>Cookies Debug</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse glow-dot"></span>
+                    </button>
                 </div>
                 <span id="testerTabHint" class="text-[10px] font-mono text-slate-500 truncate max-w-[150px]">URL • Query &amp; Path Params</span>
+            </div>
+
+            <!-- Auto-Chained Notification Bar -->
+            <div id="autoChainBar" class="hidden px-3 py-1 bg-emerald-950/70 border-b border-emerald-800/50 text-[10px] font-mono text-emerald-300 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center space-x-1.5 truncate">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse glow-dot"></span>
+                    <span class="font-bold text-emerald-400">Auto-Chained:</span>
+                    <span id="autoChainText" class="truncate text-slate-200 font-sans"></span>
+                </div>
+                <button id="btnClearAutoChain" class="text-emerald-400 hover:text-emerald-200 underline text-[9px] cursor-pointer ml-2 flex-shrink-0" type="button" title="Reset parameter auto-chain">Reset</button>
             </div>
 
             <!-- Request Params JSON Body Editor Area -->
@@ -537,12 +574,19 @@
                 </button>
             </div>
 
-            <!-- Ready Status Badge & Latency -->
+            <!-- Ready Status Badge, Latency, Size & Copy Response -->
             <div class="px-3 py-1.5 border-b border-slate-800/60 bg-[#070d18] flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center space-x-2">
                     <span id="testerResponseStatus" class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">Siap Kirim</span>
+                    <span id="testerResponseSize" class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800/80 text-slate-300 border border-slate-700/60 hidden">-- KB</span>
                 </div>
-                <span id="testerResponseTime" class="text-[10px] font-mono text-slate-500"></span>
+                <div class="flex items-center space-x-2">
+                    <span id="testerResponseTime" class="text-[10px] font-mono text-slate-500"></span>
+                    <button id="btnCopyTesterResponse" class="hidden text-slate-400 hover:text-white flex items-center space-x-1 cursor-pointer transition text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700" type="button" title="Salin respons JSON">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                        <span>Salin</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Response Panel -->
@@ -597,6 +641,14 @@
             let currentTesterTab = 'params';
             let isTesterVisible = true;
 
+            // In-Memory Global Auto-Captured Parameters (with localStorage sync)
+            let AUTO_CAPTURED_PARAMS = {};
+            try {
+                AUTO_CAPTURED_PARAMS = JSON.parse(localStorage.getItem('siska_auto_captured_params') || '{}');
+            } catch (e) {
+                AUTO_CAPTURED_PARAMS = {};
+            }
+
             // Cache of request editor contents per tab
             let testerData = {
                 params: INITIAL_TESTER.params || '{}',
@@ -623,11 +675,22 @@
             const docSanctumBox = document.getElementById('docSanctumBox');
             const docSanctumNote = document.getElementById('docSanctumNote');
             const docHeadersTableBody = document.getElementById('docHeadersTableBody');
+            
+            // Parameters & Body Schema Elements
+            const docParamsSection = document.getElementById('docParamsSection');
+            const docParamsHeading = document.getElementById('docParamsHeading');
+            const docParamsBadge = document.getElementById('docParamsBadge');
+            const docParamsTableContainer = document.getElementById('docParamsTableContainer');
+            const docParamsTableBody = document.getElementById('docParamsTableBody');
             const docParamsBlock = document.getElementById('docParamsBlock');
+
             const docBodySection = document.getElementById('docBodySection');
+            const docBodyHeading = document.getElementById('docBodyHeading');
+            const docBodyBadge = document.getElementById('docBodyBadge');
             const docBodyTableContainer = document.getElementById('docBodyTableContainer');
             const docBodyTableBody = document.getElementById('docBodyTableBody');
             const docBodyRawBlock = document.getElementById('docBodyRawBlock');
+
             const docResponseBlock = document.getElementById('docResponseBlock');
             const docSnippetBlock = document.getElementById('docSnippetBlock');
             const snippetLangLabel = document.getElementById('snippetLangLabel');
@@ -639,8 +702,15 @@
             const testerEditorLabel = document.getElementById('testerEditorLabel');
             const testerCharsCounter = document.getElementById('testerCharsCounter');
             const testerTabHint = document.getElementById('testerTabHint');
+            const tabBodyIndicator = document.getElementById('tabBodyIndicator');
+            const autoChainBar = document.getElementById('autoChainBar');
+            const autoChainText = document.getElementById('autoChainText');
+            const btnClearAutoChain = document.getElementById('btnClearAutoChain');
+
             const testerResponseStatus = document.getElementById('testerResponseStatus');
+            const testerResponseSize = document.getElementById('testerResponseSize');
             const testerResponseTime = document.getElementById('testerResponseTime');
+            const btnCopyTesterResponse = document.getElementById('btnCopyTesterResponse');
             const testerPlaceholder = document.getElementById('testerPlaceholder');
             const testerResponseBody = document.getElementById('testerResponseBody');
             const testerResponseHeaders = document.getElementById('testerResponseHeaders');
@@ -667,13 +737,31 @@
                 return null;
             }
 
+            function findEndpointByPath(path) {
+                if (!path) return null;
+                const clean = path.trim().toLowerCase();
+                for (const cat of CATEGORIES_DATA) {
+                    for (const ep of cat.endpoints) {
+                        if (ep.path.toLowerCase() === clean) return ep;
+                    }
+                }
+                for (const cat of CATEGORIES_DATA) {
+                    for (const ep of cat.endpoints) {
+                        if (ep.path.toLowerCase().includes(clean)) return ep;
+                    }
+                }
+                return null;
+            }
+
             function showToast(message, type = 'info') {
                 const toast = document.createElement('div');
                 toast.className = 'toast-animate px-3.5 py-2 rounded text-xs font-mono shadow-xl border flex items-center space-x-2 pointer-events-auto bg-[#0a1122] border-slate-700 text-slate-200';
                 if (type === 'success') {
                     toast.className += ' border-emerald-600/60 text-emerald-300';
+                } else if (type === 'error') {
+                    toast.className += ' border-rose-600/60 text-rose-300';
                 }
-                toast.innerHTML = `<svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span>${message}</span>`;
+                toast.innerHTML = `<svg class="w-3.5 h-3.5 ${type === 'error' ? 'text-rose-400' : 'text-emerald-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span>${message}</span>`;
                 const container = document.getElementById('toastContainer');
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 2500);
@@ -681,6 +769,156 @@
 
             function updateCharsCounter() {
                 testerCharsCounter.textContent = `Chars: ${testerEditor.value.length}`;
+                if (currentTesterTab === 'body') {
+                    updateBodyDotIndicator();
+                }
+            }
+
+            function updateBodyDotIndicator() {
+                if (tabBodyIndicator) {
+                    const content = testerData.body || testerEditor.value;
+                    if (content && content.trim() !== '' && content.trim() !== '{}') {
+                        tabBodyIndicator.classList.remove('hidden');
+                    } else {
+                        tabBodyIndicator.classList.add('hidden');
+                    }
+                }
+            }
+
+            function renderAutoChainUI() {
+                if (!autoChainBar || !autoChainText) return;
+                const keys = Object.keys(AUTO_CAPTURED_PARAMS);
+                if (keys.length > 0) {
+                    autoChainBar.classList.remove('hidden');
+                    autoChainText.textContent = keys.map(k => `${k}=${String(AUTO_CAPTURED_PARAMS[k]).substring(0, 18)}`).join(', ');
+                } else {
+                    autoChainBar.classList.add('hidden');
+                }
+            }
+
+            function inferSource(key, ep, location) {
+                const lk = key.toLowerCase();
+                // 1. Session / Token
+                if (lk === 'token' || lk === 'access_token' || lk === 'authorization' || lk.endsWith('_token')) {
+                    return {
+                        type: 'session',
+                        label: 'Sesi / Token',
+                        badgeClass: 'bg-purple-950/80 text-purple-300 border border-purple-800/60',
+                        icon: `<svg class="w-3 h-3 text-purple-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>`
+                    };
+                }
+                // 2. From other endpoint
+                if (lk === 'nim' || lk === 'nip') {
+                    if (ep.path.includes('/login')) {
+                        return {
+                            type: 'manual',
+                            label: 'Input Manual',
+                            badgeClass: 'bg-slate-800/90 text-slate-400 border border-slate-700/60',
+                            icon: `<svg class="w-3 h-3 text-slate-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>`
+                        };
+                    }
+                    return {
+                        type: 'endpoint',
+                        label: '/api/auth/mhs/login',
+                        sourceEndpoint: '/api/auth/mhs/login',
+                        badgeClass: 'bg-blue-950/80 text-blue-300 border border-blue-800/60',
+                        icon: `<svg class="w-3 h-3 text-blue-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`
+                    };
+                }
+                if (lk.includes('krs') || lk === 'kode_krs') {
+                    return {
+                        type: 'endpoint',
+                        label: '/api/mhs/krs',
+                        sourceEndpoint: '/api/mhs/krs',
+                        badgeClass: 'bg-blue-950/80 text-blue-300 border border-blue-800/60',
+                        icon: `<svg class="w-3 h-3 text-blue-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`
+                    };
+                }
+                if (lk.includes('semester') || lk.includes('tahun_akademik')) {
+                    return {
+                        type: 'endpoint',
+                        label: '/api/mhs/semester',
+                        sourceEndpoint: '/api/mhs/semester',
+                        badgeClass: 'bg-blue-950/80 text-blue-300 border border-blue-800/60',
+                        icon: `<svg class="w-3 h-3 text-blue-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`
+                    };
+                }
+                if (lk.includes('kurikulum')) {
+                    return {
+                        type: 'endpoint',
+                        label: '/api/mhs/kurikulum',
+                        sourceEndpoint: '/api/mhs/kurikulum',
+                        badgeClass: 'bg-blue-950/80 text-blue-300 border border-blue-800/60',
+                        icon: `<svg class="w-3 h-3 text-blue-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`
+                    };
+                }
+                if (lk.includes('kelas') || lk === 'id_kelas') {
+                    return {
+                        type: 'endpoint',
+                        label: '/api/staff/akademik/kelas',
+                        sourceEndpoint: '/api/staff/akademik/kelas',
+                        badgeClass: 'bg-blue-950/80 text-blue-300 border border-blue-800/60',
+                        icon: `<svg class="w-3 h-3 text-blue-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`
+                    };
+                }
+                // 3. Manual Input Default
+                return {
+                    type: 'manual',
+                    label: 'Input Manual',
+                    badgeClass: 'bg-slate-800/90 text-slate-400 border border-slate-700/60',
+                    icon: `<svg class="w-3 h-3 text-slate-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>`
+                };
+            }
+
+            function createSchemaRow(key, val, location, isRequired = true) {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-900/30';
+
+                const valType = Array.isArray(val) ? 'array' : typeof val;
+                const valStr = typeof val === 'object' ? JSON.stringify(val) : String(val !== undefined && val !== null ? val : '');
+                const source = inferSource(key, currentEndpoint, location);
+
+                const locBadgeClass = location === 'body' 
+                    ? 'bg-emerald-950/70 text-emerald-400 border border-emerald-800/40' 
+                    : (location === 'path' ? 'bg-amber-950/70 text-amber-400 border border-amber-800/40' : 'bg-blue-950/70 text-blue-400 border border-blue-800/40');
+
+                const reqBadgeClass = isRequired 
+                    ? 'bg-rose-950/80 text-rose-400 border border-rose-800/50' 
+                    : 'bg-slate-800 text-slate-400 border border-slate-700';
+
+                let sourceHtml = '';
+                if (source.type === 'endpoint') {
+                    sourceHtml = `
+                        <div class="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded text-[10px] ${source.badgeClass} font-sans">
+                            ${source.icon}
+                            <span class="font-mono text-[9px] truncate max-w-[120px]">${source.label}</span>
+                            <button type="button" class="btn-play-source text-blue-300 hover:text-white bg-blue-700/60 hover:bg-blue-600 px-1.5 py-0.2 rounded text-[9px] font-semibold transition cursor-pointer" data-ep-path="${source.sourceEndpoint}" title="Buka endpoint ini di Tester">▶ Play</button>
+                        </div>
+                    `;
+                } else {
+                    sourceHtml = `
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] ${source.badgeClass} font-sans">
+                            ${source.icon}
+                            <span>${source.label}</span>
+                        </span>
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-2 px-3 font-semibold text-slate-200 font-mono">
+                        <div class="flex items-center space-x-1.5">
+                            <span>${key}</span>
+                            <span class="px-1 py-0.2 rounded text-[9px] font-mono ${locBadgeClass}">(${location})</span>
+                        </div>
+                    </td>
+                    <td class="py-2 px-3 text-slate-400 font-mono">${valType}</td>
+                    <td class="py-2 px-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] ${reqBadgeClass} font-sans font-medium">${isRequired ? 'Wajib' : 'Opsional'}</span>
+                    </td>
+                    <td class="py-2 px-3 text-slate-300 font-mono truncate max-w-[200px]" title="${valStr}">${valStr || '<span class="text-slate-500 italic">null</span>'}</td>
+                    <td class="py-2 px-3">${sourceHtml}</td>
+                `;
+                return tr;
             }
 
             function renderDocumentation(ep) {
@@ -709,30 +947,62 @@
                     docSanctumBox.classList.add('hidden');
                 }
 
-                // Headers table
+                // Headers table (4 columns: Key, Tipe, Status, Keterangan)
                 docHeadersTableBody.innerHTML = '';
                 const headersList = ep.headers || [
                     { key: 'Accept', type: 'string', status: 'Wajib', keterangan: 'Harus bernilai application/json' }
                 ];
+
                 headersList.forEach(h => {
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-900/30';
-                    const statusClass = h.status === 'Wajib' 
-                        ? 'bg-amber-950/80 text-amber-400 border border-amber-800/50' 
-                        : 'bg-slate-800 text-slate-400 border border-slate-700';
+
+                    let statusBadge = h.status || 'Wajib';
+                    let statusClass = 'bg-rose-950/80 text-rose-400 border border-rose-800/50';
+
+                    const k = (h.key || '').toLowerCase();
+                    if (k === 'x-xsrf-token' || k === 'authorization' || k === 'cookie') {
+                        statusBadge = 'Auto';
+                        statusClass = 'bg-purple-950/80 text-purple-300 border border-purple-800/50';
+                    } else if (statusBadge === 'Custom') {
+                        statusClass = 'bg-sky-950/80 text-sky-400 border border-sky-800/50';
+                    } else if (statusBadge === 'Opsional') {
+                        statusClass = 'bg-slate-800 text-slate-400 border border-slate-700';
+                    }
+
                     row.innerHTML = `
                         <td class="py-2 px-3 font-semibold text-sky-400">${h.key}</td>
                         <td class="py-2 px-3 text-slate-400 font-sans">${h.type}</td>
-                        <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] ${statusClass} font-sans font-medium">${h.status}</span></td>
+                        <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] ${statusClass} font-sans font-medium">${statusBadge}</span></td>
                         <td class="py-2 px-3 text-slate-300 font-sans">${h.keterangan}</td>
                     `;
                     docHeadersTableBody.appendChild(row);
                 });
 
-                // Parameters Schema
-                docParamsBlock.textContent = ep.params_schema || '// Endpoint ini tidak memerlukan parameter URL.';
+                // Request Parameters Section (Query & Path for GET / DELETE)
+                let hasQueryParams = false;
+                let parsedParams = null;
+                if (ep.default_params) {
+                    parsedParams = typeof ep.default_params === 'string' ? JSON.parse(ep.default_params) : ep.default_params;
+                    if (parsedParams && typeof parsedParams === 'object' && Object.keys(parsedParams).length > 0) {
+                        hasQueryParams = true;
+                    }
+                }
 
-                // Request Body Schema rendering
+                if (hasQueryParams) {
+                    docParamsTableContainer.classList.remove('hidden');
+                    docParamsTableBody.innerHTML = '';
+                    Object.entries(parsedParams).forEach(([k, v]) => {
+                        const row = createSchemaRow(k, v, 'query', true);
+                        docParamsTableBody.appendChild(row);
+                    });
+                    docParamsBlock.textContent = JSON.stringify(parsedParams, null, 2);
+                } else {
+                    docParamsTableContainer.classList.add('hidden');
+                    docParamsBlock.textContent = ep.params_schema || '// Endpoint ini tidak memerlukan parameter URL.';
+                }
+
+                // Request Body Section (JSON Payload for POST / PUT / PATCH)
                 if (ep.default_body && ep.default_body.trim() !== '' && ep.default_body.trim() !== '{}') {
                     docBodySection.classList.remove('hidden');
                     let parsedBody = null;
@@ -744,16 +1014,7 @@
                         docBodyTableContainer.classList.remove('hidden');
                         docBodyTableBody.innerHTML = '';
                         Object.entries(parsedBody).forEach(([key, val]) => {
-                            const row = document.createElement('tr');
-                            row.className = 'hover:bg-slate-900/30';
-                            const valType = Array.isArray(val) ? 'array' : typeof val;
-                            const valStr = typeof val === 'object' ? JSON.stringify(val) : String(val);
-                            row.innerHTML = `
-                                <td class="py-2 px-3 font-semibold text-emerald-400 font-mono">${key}</td>
-                                <td class="py-2 px-3 text-slate-400 font-mono">${valType}</td>
-                                <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] bg-amber-950/80 text-amber-400 border border-amber-800/50 font-sans font-medium">Wajib</span></td>
-                                <td class="py-2 px-3 text-slate-300 font-mono truncate max-w-[240px]">${valStr}</td>
-                            `;
+                            const row = createSchemaRow(key, val, 'body', true);
                             docBodyTableBody.appendChild(row);
                         });
                         docBodyRawBlock.textContent = JSON.stringify(parsedBody, null, 2);
@@ -775,6 +1036,22 @@
                 // Code Snippets
                 renderSnippet(currentActiveSnippetLang);
 
+                // Bind Play button clicks inside schema tables
+                document.querySelectorAll('.btn-play-source').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const p = btn.getAttribute('data-ep-path');
+                        const targetEp = findEndpointByPath(p);
+                        if (targetEp) {
+                            renderDocumentation(targetEp);
+                            syncEndpointToTester(targetEp);
+                            showToast(`Memuat endpoint sumber: ${targetEp.path}`, 'info');
+                        } else {
+                            showToast(`Endpoint sumber tidak ditemukan: ${p}`, 'error');
+                        }
+                    });
+                });
+
                 // Highlight active item in sidebar tree
                 document.querySelectorAll('.endpoint-item').forEach(el => {
                     const isActive = el.getAttribute('data-ep-id') === ep.id;
@@ -794,9 +1071,14 @@
 
             function renderResponseSample(status) {
                 currentActiveResponseStatus = status;
-                let body = currentEndpoint.responses && currentEndpoint.responses[status] 
-                    ? currentEndpoint.responses[status] 
-                    : (currentEndpoint.responses && currentEndpoint.responses['200'] ? currentEndpoint.responses['200'] : '{}');
+                let body = '{}';
+                if (currentEndpoint.responses && currentEndpoint.responses[status]) {
+                    body = currentEndpoint.responses[status];
+                } else if (status === '403') {
+                    body = JSON.stringify({ status: false, message: "Aksi tidak diizinkan untuk peran ini (Forbidden 403)." }, null, 2);
+                } else if (currentEndpoint.responses && currentEndpoint.responses['200']) {
+                    body = currentEndpoint.responses['200'];
+                }
                 
                 try {
                     const parsed = JSON.parse(body);
@@ -805,10 +1087,21 @@
                     docResponseBlock.textContent = body;
                 }
 
+                // Text coloring based on HTTP status
+                if (status.startsWith('2')) {
+                    docResponseBlock.className = 'p-3.5 font-mono text-xs text-emerald-300 leading-relaxed overflow-x-auto';
+                } else if (status.startsWith('4')) {
+                    docResponseBlock.className = 'p-3.5 font-mono text-xs text-amber-300 leading-relaxed overflow-x-auto';
+                } else {
+                    docResponseBlock.className = 'p-3.5 font-mono text-xs text-rose-400 leading-relaxed overflow-x-auto';
+                }
+
                 document.querySelectorAll('.resp-status-btn').forEach(btn => {
                     const s = btn.getAttribute('data-status');
                     if (s === status) {
-                        btn.className = 'resp-status-btn px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold transition cursor-pointer';
+                        btn.className = s.startsWith('2') 
+                            ? 'resp-status-btn px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold transition cursor-pointer'
+                            : 'resp-status-btn px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800 font-bold transition cursor-pointer';
                     } else {
                         btn.className = 'resp-status-btn px-2 py-0.5 rounded bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer';
                     }
@@ -857,10 +1150,26 @@
                 
                 let targetUrl = ep.full_url || (ep.path.startsWith('http') ? ep.path : `${BASE_URL}${ep.path.startsWith('/') ? '' : '/'}${ep.path}`);
                 
-                // If it's GET and has default_params, ensure query params are in the URL bar
-                if (ep.method === 'GET' && ep.default_params && typeof ep.default_params === 'object' && Object.keys(ep.default_params).length > 0) {
+                // Merge auto-captured params into URL query if GET
+                let epParams = ep.default_params ? (typeof ep.default_params === 'object' ? { ...ep.default_params } : JSON.parse(ep.default_params || '{}')) : {};
+                let epBody = ep.default_body ? (typeof ep.default_body === 'object' ? { ...ep.default_body } : JSON.parse(ep.default_body || '{}')) : {};
+
+                // Auto-fill from AUTO_CAPTURED_PARAMS
+                let appliedCount = 0;
+                Object.keys(AUTO_CAPTURED_PARAMS).forEach(k => {
+                    if (epParams && k in epParams) {
+                        epParams[k] = AUTO_CAPTURED_PARAMS[k];
+                        appliedCount++;
+                    }
+                    if (epBody && k in epBody) {
+                        epBody[k] = AUTO_CAPTURED_PARAMS[k];
+                        appliedCount++;
+                    }
+                });
+
+                if (ep.method === 'GET' && epParams && Object.keys(epParams).length > 0) {
                     const searchParams = new URLSearchParams();
-                    Object.entries(ep.default_params).forEach(([k, v]) => searchParams.append(k, String(v)));
+                    Object.entries(epParams).forEach(([k, v]) => searchParams.append(k, String(v)));
                     const qs = searchParams.toString();
                     if (!targetUrl.includes('?')) {
                         targetUrl += '?' + qs;
@@ -868,33 +1177,16 @@
                 }
                 
                 testerUrl.value = targetUrl;
-
-                if (ep.default_params) {
-                    testerData.params = typeof ep.default_params === 'object'
-                        ? JSON.stringify(ep.default_params, null, 2)
-                        : ep.default_params;
-                } else {
-                    testerData.params = '{}';
-                }
-
-                if (ep.default_body) {
-                    try {
-                        const parsed = typeof ep.default_body === 'string' ? JSON.parse(ep.default_body) : ep.default_body;
-                        testerData.body = JSON.stringify(parsed, null, 2);
-                    } catch (e) {
-                        testerData.body = typeof ep.default_body === 'string' ? ep.default_body : JSON.stringify(ep.default_body, null, 2);
-                    }
-                } else {
-                    testerData.body = '{}';
-                }
+                testerData.params = Object.keys(epParams).length > 0 ? JSON.stringify(epParams, null, 2) : '{}';
+                testerData.body = Object.keys(epBody).length > 0 ? JSON.stringify(epBody, null, 2) : '{}';
 
                 const hdr = { "Accept": "application/json" };
                 if (ep.method !== 'GET') {
                     hdr["Content-Type"] = "application/json";
                 }
                 
-                const savedToken = localStorage.getItem('siska_tester_token');
-                if (savedToken && ep.headers && ep.headers.some(h => h.key === 'Authorization')) {
+                const savedToken = AUTO_CAPTURED_PARAMS.token || localStorage.getItem('siska_tester_token');
+                if (savedToken && ep.headers && ep.headers.some(h => (h.key || '').toLowerCase() === 'authorization')) {
                     hdr["Authorization"] = `Bearer ${savedToken}`;
                 }
                 
@@ -906,8 +1198,17 @@
                     switchTesterTab('body');
                 }
 
+                updateBodyDotIndicator();
+                renderAutoChainUI();
+
+                if (appliedCount > 0) {
+                    showToast(`⚡ ${appliedCount} nilai auto-chained otomatis terisi!`, 'success');
+                }
+
                 testerResponseStatus.textContent = 'Siap Kirim';
                 testerResponseStatus.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700';
+                testerResponseSize.classList.add('hidden');
+                btnCopyTesterResponse.classList.add('hidden');
                 testerResponseTime.textContent = '';
                 updateCharsCounter();
             }
@@ -919,9 +1220,9 @@
                 document.querySelectorAll('.tester-tab-btn').forEach(btn => {
                     const t = btn.getAttribute('data-tab');
                     if (t === tab) {
-                        btn.className = 'tester-tab-btn py-2 text-white border-b-2 border-blue-500 font-medium cursor-pointer transition';
+                        btn.className = 'tester-tab-btn py-2 text-white border-b-2 border-blue-500 font-medium cursor-pointer transition flex items-center space-x-1';
                     } else {
-                        btn.className = 'tester-tab-btn py-2 text-slate-400 hover:text-slate-200 cursor-pointer transition';
+                        btn.className = 'tester-tab-btn py-2 text-slate-400 hover:text-slate-200 cursor-pointer transition flex items-center space-x-1';
                     }
                 });
 
@@ -999,6 +1300,30 @@
                 routesBadge.textContent = `${visibleCount} Routes`;
             }
 
+            async function pingGateway() {
+                const pingEl = document.getElementById('gatewayPingLatency');
+                const labelEl = document.getElementById('gatewayStatusLabel');
+                const dotEl = document.getElementById('gatewayStatusDot');
+                const startTime = performance.now();
+                try {
+                    const res = await fetch('/api/auth/csrf-cookie', { method: 'GET', credentials: 'include' });
+                    const elapsed = Math.round(performance.now() - startTime);
+                    if (pingEl) pingEl.textContent = `${elapsed}ms`;
+                    if (labelEl) {
+                        labelEl.textContent = 'ONLINE';
+                        labelEl.className = 'text-emerald-400 font-bold text-[10px]';
+                    }
+                    if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-emerald-400 glow-dot animate-pulse';
+                } catch (e) {
+                    if (pingEl) pingEl.textContent = '--';
+                    if (labelEl) {
+                        labelEl.textContent = 'OFFLINE';
+                        labelEl.className = 'text-rose-400 font-bold text-[10px]';
+                    }
+                    if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-rose-500';
+                }
+            }
+
             async function executeRequest() {
                 testerData[currentTesterTab] = testerEditor.value;
 
@@ -1046,9 +1371,28 @@
                     if (xsrf) headers['X-XSRF-TOKEN'] = xsrf;
                 }
 
+                // Dynamic Path Placeholder replacement: {param}, :param, <param>
+                const combinedValues = { ...AUTO_CAPTURED_PARAMS, ...params };
+                url = url.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, p) => combinedValues[p] !== undefined ? encodeURIComponent(combinedValues[p]) : match);
+                url = url.replace(/:([a-zA-Z0-9_]+)/g, (match, p) => combinedValues[p] !== undefined ? encodeURIComponent(combinedValues[p]) : match);
+                url = url.replace(/<([a-zA-Z0-9_]+)>/g, (match, p) => combinedValues[p] !== undefined ? encodeURIComponent(combinedValues[p]) : match);
+                testerUrl.value = url;
+
+                // Set Loading State
+                btnSendRequest.disabled = true;
+                btnSendRequest.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                    <span class="text-xs font-semibold">Mengirim Request...</span>
+                `;
+
                 testerResponseStatus.textContent = 'Mengirim request...';
                 testerResponseStatus.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950 text-amber-400 border border-amber-800 animate-pulse';
                 testerResponseTime.textContent = '';
+                testerResponseSize.classList.add('hidden');
+                btnCopyTesterResponse.classList.add('hidden');
                 testerPlaceholder.classList.add('hidden');
                 testerResponseBody.classList.remove('hidden');
                 testerResponseBody.textContent = 'Memuat response...';
@@ -1082,6 +1426,7 @@
                     let status = 200;
                     let statusText = 'OK';
                     let elapsed = 0;
+                    let rawContent = '';
 
                     if (isSameOrigin) {
                         const res = await fetch(finalUrl, {
@@ -1099,8 +1444,10 @@
                         const ct = res.headers.get('content-type') || '';
                         if (ct.includes('application/json')) {
                             responseData = await res.json().catch(() => null);
+                            rawContent = JSON.stringify(responseData);
                         } else {
-                            responseData = await res.text().catch(() => '');
+                            rawContent = await res.text().catch(() => '');
+                            responseData = rawContent;
                         }
                     } else {
                         const proxyRes = await fetch(PROXY_URL, {
@@ -1125,7 +1472,15 @@
                         statusText = proxyData.statusText;
                         responseHeaders = proxyData.headers || {};
                         responseData = proxyData.body || proxyData.error || proxyData.raw_body;
+                        rawContent = typeof responseData === 'object' ? JSON.stringify(responseData) : String(responseData || '');
                     }
+
+                    // Format Response Size
+                    const sizeBytes = new Blob([rawContent]).size;
+                    const sizeStr = sizeBytes < 1024 ? `${sizeBytes} B` : `${(sizeBytes / 1024).toFixed(1)} KB`;
+                    testerResponseSize.textContent = sizeStr;
+                    testerResponseSize.classList.remove('hidden');
+                    btnCopyTesterResponse.classList.remove('hidden');
 
                     testerResponseTime.textContent = `${elapsed}ms`;
                     if (status >= 200 && status < 300) {
@@ -1141,17 +1496,46 @@
 
                     if (typeof responseData === 'object' && responseData !== null) {
                         testerResponseBody.textContent = JSON.stringify(responseData, null, 2);
-                        const tok = responseData.token || responseData.data?.token;
-                        if (tok && typeof tok === 'string') {
-                            localStorage.setItem('siska_tester_token', tok);
-                            showToast('Token Bearer disimpan untuk request selanjutnya!', 'info');
+                        testerResponseBody.className = status >= 200 && status < 300 ? 'text-emerald-300 whitespace-pre-wrap leading-relaxed' : 'text-amber-300 whitespace-pre-wrap leading-relaxed';
+
+                        // Auto-Chain Key Capture on 2xx
+                        if (status >= 200 && status < 300) {
+                            const newChained = [];
+                            function extractChained(obj) {
+                                if (!obj || typeof obj !== 'object') return;
+                                const keysToLook = ['token', 'access_token', 'id', 'nim', 'nip', 'kode_krs', 'kode', 'code', 'semester', 'tahun_akademik', 'prodi_id', 'kelas_id', 'id_kelas'];
+                                Object.entries(obj).forEach(([k, v]) => {
+                                    if (v && typeof v !== 'object') {
+                                        const lk = k.toLowerCase();
+                                        if (keysToLook.includes(lk) || lk.startsWith('kode_') || lk.endsWith('_id')) {
+                                            AUTO_CAPTURED_PARAMS[k] = v;
+                                            newChained.push(`${k}=${v}`);
+                                        }
+                                    } else if (v && typeof v === 'object' && !Array.isArray(v)) {
+                                        extractChained(v);
+                                    }
+                                });
+                            }
+                            extractChained(responseData);
+
+                            if (newChained.length > 0) {
+                                localStorage.setItem('siska_auto_captured_params', JSON.stringify(AUTO_CAPTURED_PARAMS));
+                                renderAutoChainUI();
+                                showToast(`Auto-Chained: ${newChained.slice(0, 3).join(', ')}`, 'success');
+                            }
+
+                            const tok = responseData.token || responseData.data?.token;
+                            if (tok && typeof tok === 'string') {
+                                localStorage.setItem('siska_tester_token', tok);
+                            }
                         }
                     } else {
                         testerResponseBody.textContent = String(responseData || '(empty response)');
+                        testerResponseBody.className = 'text-slate-300 whitespace-pre-wrap leading-relaxed';
                     }
 
                     testerResponseHeaders.textContent = JSON.stringify(responseHeaders, null, 2);
-                    showToast(`Selesai: ${status} ${statusText} (${elapsed}ms)`, 'success');
+                    showToast(`Selesai: ${status} ${statusText} (${elapsed}ms, ${sizeStr})`, status < 400 ? 'success' : 'info');
 
                 } catch (err) {
                     const elapsed = Math.round(performance.now() - startTime);
@@ -1159,7 +1543,16 @@
                     testerResponseStatus.textContent = 'FETCH ERROR';
                     testerResponseStatus.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950 text-rose-400 border border-rose-800 font-bold';
                     testerResponseBody.textContent = `Gagal mengirim request: ${err.message}`;
+                    testerResponseBody.className = 'text-rose-400 whitespace-pre-wrap leading-relaxed';
                     showToast('Gagal mengirim request', 'error');
+                } finally {
+                    btnSendRequest.disabled = false;
+                    btnSendRequest.innerHTML = `
+                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <span class="text-xs font-semibold">Kirim Request (Ctrl+Enter)</span>
+                    `;
                 }
             }
 
@@ -1341,6 +1734,23 @@
                 });
             });
 
+            if (btnCopyTesterResponse) {
+                btnCopyTesterResponse.addEventListener('click', () => {
+                    navigator.clipboard.writeText(testerResponseBody.textContent).then(() => {
+                        showToast('Respons API disalin!', 'success');
+                    });
+                });
+            }
+
+            if (btnClearAutoChain) {
+                btnClearAutoChain.addEventListener('click', () => {
+                    AUTO_CAPTURED_PARAMS = {};
+                    localStorage.removeItem('siska_auto_captured_params');
+                    renderAutoChainUI();
+                    showToast('Parameter auto-chain dibersihkan!', 'info');
+                });
+            }
+
             // Splitter Resizable Logic
             function initPanelSplitters() {
                 if (!leftSidebar || !rightTesterPanel || !gutterLeft || !gutterRight) return;
@@ -1457,6 +1867,10 @@
             renderDocumentation(initialTarget);
             syncEndpointToTester(initialTarget);
             filterEndpoints();
+            renderAutoChainUI();
+            updateBodyDotIndicator();
+            pingGateway();
+            setInterval(pingGateway, 30000);
 
             // Auto-expand category accordion containing initialTarget
             const activeNavEl = document.querySelector(`.endpoint-item[data-ep-id="${initialTarget.id}"]`);

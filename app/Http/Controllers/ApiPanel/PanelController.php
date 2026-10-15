@@ -636,18 +636,23 @@ class PanelController extends Controller
             $path = $m[2];
         }
 
-        // Separate query params from path if any
+        // Separate query params from path if any, or fallback to example request line
         $defaultParams = null;
         if (str_contains($path, '?')) {
             $parts = explode('?', $path, 2);
             $path = $parts[0];
             parse_str($parts[1], $parsedParams);
             $defaultParams = $parsedParams;
+        } elseif (preg_match('/(?:GET|POST|PUT|DELETE)\s+[^\s?]+\?([^\s\r\n`]+)/i', $raw, $qm)) {
+            parse_str($qm[1], $parsedParams);
+            $defaultParams = $parsedParams;
         }
 
         // Extract Request Body
         $defaultBody = null;
         if (preg_match('/\*\*Request Body:\*\*\s*```(?:json)?\s*([\s\S]*?)```/i', $raw, $bm)) {
+            $defaultBody = trim($bm[1]);
+        } elseif (preg_match('/\*\*Contoh Request Body:\*\*\s*```(?:json)?\s*([\s\S]*?)```/i', $raw, $bm)) {
             $defaultBody = trim($bm[1]);
         }
 

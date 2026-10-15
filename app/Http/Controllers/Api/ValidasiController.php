@@ -29,6 +29,8 @@ class ValidasiController extends Controller
         $validator = Validator::make($request->all(), [
             'nim' => 'required|string|max:20',
             'status' => 'required',
+            'tahun_akademik' => 'nullable|string',
+            'semester' => 'nullable|string',
             'kode_tahun_akademik' => 'nullable',
         ]);
 
@@ -40,7 +42,11 @@ class ValidasiController extends Controller
             $nim = trim((string) $request->input('nim'));
             $statusNormalized = $this->normalizeStatus($request->input('status'));
 
-            $ta = $this->resolveTahunAkademik($request->input('kode_tahun_akademik'));
+            $ta = $this->resolveTahunAkademik(
+                $request->input('kode_tahun_akademik'),
+                $request->input('tahun_akademik'),
+                $request->input('semester')
+            );
             if ($ta === null) {
                 return $this->error('Tahun Akademik tidak ditemukan.', 404);
             }
@@ -97,6 +103,8 @@ class ValidasiController extends Controller
     {
         $validator = Validator::make($request->query(), [
             'nim' => 'required|string|max:20',
+            'tahun_akademik' => 'nullable|string',
+            'semester' => 'nullable|string',
             'kode_tahun_akademik' => 'nullable',
         ]);
 
@@ -107,7 +115,11 @@ class ValidasiController extends Controller
         try {
             $nim = trim((string) $request->query('nim'));
 
-            $ta = $this->resolveTahunAkademik($request->query('kode_tahun_akademik'));
+            $ta = $this->resolveTahunAkademik(
+                $request->query('kode_tahun_akademik'),
+                $request->query('tahun_akademik'),
+                $request->query('semester')
+            );
             if ($ta === null) {
                 return $this->error('Tahun Akademik tidak ditemukan.', 404);
             }
@@ -207,6 +219,8 @@ class ValidasiController extends Controller
         $validator = Validator::make($request->all(), [
             'nim' => 'required|string|max:20',
             'status' => 'required',
+            'tahun_akademik' => 'nullable|string',
+            'semester' => 'nullable|string',
             'kode_tahun_akademik' => 'nullable',
         ]);
 
@@ -218,7 +232,11 @@ class ValidasiController extends Controller
             $nim = trim((string) $request->input('nim'));
             $statusNormalized = $this->normalizeStatus($request->input('status'));
 
-            $ta = $this->resolveTahunAkademik($request->input('kode_tahun_akademik'));
+            $ta = $this->resolveTahunAkademik(
+                $request->input('kode_tahun_akademik'),
+                $request->input('tahun_akademik'),
+                $request->input('semester')
+            );
             if ($ta === null) {
                 return $this->error('Tahun Akademik tidak ditemukan.', 404);
             }
@@ -268,11 +286,38 @@ class ValidasiController extends Controller
     }
 
     /**
-     * Resolusi Tahun Akademik: mendukung plain ID, encrypted string, atau default tahun aktif.
+     * Resolusi Tahun Akademik: mendukung tahun_akademik + semester (e.g. "2025/2026" & "ganjil"/"genap"),
+     * kode_tahun_akademik (plain / terenkripsi), atau default tahun aktif.
      */
-    private function resolveTahunAkademik(mixed $inputTa): ?TahunAkademik
+    private function resolveTahunAkademik(mixed $inputTa = null, ?string $inputTahun = null, ?string $inputSemester = null): ?TahunAkademik
     {
+        // 1. Jika diberikan tahun_akademik (misal "2025/2026")
+        if (! empty($inputTahun)) {
+            $query = TahunAkademik::query()->where('tahun_akademik', trim($inputTahun));
+
+            if (! empty($inputSemester)) {
+                $sem = strtolower(trim((string) $inputSemester));
+                if (in_array($sem, ['1', 'ganjil', 'odd'], true)) {
+                    $query->where('semester', '1');
+                } elseif (in_array($sem, ['0', '2', 'genap', 'even'], true)) {
+                    $query->whereIn('semester', ['0', '2']);
+                } else {
+                    $query->where('semester', $sem);
+                }
+            }
+
+            $ta = $query->orderByDesc('kode_tahun_akademik')->first();
+            if ($ta) {
+                return $ta;
+            }
+        }
+
+        // 2. Jika inputTa diisi (bisa berupa kode_tahun_akademik atau tahun_akademik seperti "2025/2026")
         if (! empty($inputTa)) {
+            if (str_contains((string) $inputTa, '/')) {
+                return $this->resolveTahunAkademik(null, (string) $inputTa, $inputSemester);
+            }
+
             try {
                 $decrypted = Crypt::decryptString((string) $inputTa);
                 $ta = TahunAkademik::query()->where('kode_tahun_akademik', $decrypted)->first();
@@ -289,6 +334,7 @@ class ValidasiController extends Controller
             }
         }
 
+        // 3. Default ke Tahun Akademik aktif
         return TahunAkademik::query()->where('status', 'A')->first();
     }
 
