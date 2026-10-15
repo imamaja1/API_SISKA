@@ -71,12 +71,12 @@
         .code-editor-bg {
             background-color: #060a13;
         }
-        /* Toast notification animation */
+        /* Toast notification animation (Top-Right Slide) */
         @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(10px); }
+            0% { opacity: 0; transform: translateY(-12px); }
             15% { opacity: 1; transform: translateY(0); }
             85% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 0; transform: translateY(-12px); }
         }
         .toast-animate {
             animation: fadeInOut 2.4s forwards;
@@ -617,8 +617,8 @@
     </div>
     <!-- END: WorkspaceLayout -->
 
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 pointer-events-none space-y-2"></div>
+    <!-- Toast Notification Container (Top-Right) -->
+    <div id="toastContainer" class="fixed top-14 right-5 z-50 pointer-events-none space-y-2"></div>
 
     <!-- Data Injection from Laravel -->
     <script>
@@ -754,6 +754,10 @@
             }
 
             function showToast(message, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                if (!container) return;
+                container.innerHTML = ''; // Hapus alert sebelumnya agar tidak ada alert ganda / menumpuk
+
                 const toast = document.createElement('div');
                 toast.className = 'toast-animate px-3.5 py-2 rounded text-xs font-mono shadow-xl border flex items-center space-x-2 pointer-events-auto bg-[#0a1122] border-slate-700 text-slate-200';
                 if (type === 'success') {
@@ -762,7 +766,6 @@
                     toast.className += ' border-rose-600/60 text-rose-300';
                 }
                 toast.innerHTML = `<svg class="w-3.5 h-3.5 ${type === 'error' ? 'text-rose-400' : 'text-emerald-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span>${message}</span>`;
-                const container = document.getElementById('toastContainer');
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 2500);
             }
@@ -1521,7 +1524,6 @@
                             if (newChained.length > 0) {
                                 localStorage.setItem('siska_auto_captured_params', JSON.stringify(AUTO_CAPTURED_PARAMS));
                                 renderAutoChainUI();
-                                showToast(`Auto-Chained: ${newChained.slice(0, 3).join(', ')}`, 'success');
                             }
 
                             const tok = responseData.token || responseData.data?.token;
