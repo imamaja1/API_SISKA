@@ -81,10 +81,26 @@
         .toast-animate {
             animation: fadeInOut 2.4s forwards;
         }
+
+        /* Pastikan code, JSON, pre, tabel, textarea dan input selalu bisa diblock dan disalin */
+        pre, code, textarea, input, table, .selectable-text {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        /* Styling highlight seleksi teks (ngeblock) agar kontras dan jelas di Dark Mode */
+        ::selection {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+        }
+        ::-moz-selection {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+        }
     </style>
 </head>
 
-<body class="bg-[#070d19] text-slate-300 font-sans h-screen flex flex-col overflow-hidden select-none">
+<body class="bg-[#070d19] text-slate-300 font-sans h-screen flex flex-col overflow-hidden">
 
     <!-- ======================================================== -->
     <!-- BEGIN: TopNavbar                                         -->
