@@ -45,9 +45,9 @@ class DosenController extends Controller
     }
 
     /**
-     * Search & Filter Dosen (Semua parameter dikirim di Request Body).
+     * Search & Filter Dosen.
+     * GET  /api/v1/divisi/dosen/search
      * POST /api/v1/divisi/dosen/search
-     * POST /api/v1/divisi/get-dosen
      */
     public function search(Request $request): JsonResponse
     {

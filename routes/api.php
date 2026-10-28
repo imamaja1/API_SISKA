@@ -27,9 +27,12 @@ Route::prefix('v1')->group(function () {
         Route::get('mahasiswa-get', [MahasiswaController::class, 'GetMhs']);
         Route::post('mahasiswa-show', [MahasiswaController::class, 'ShowMhs']);
 
-        // Dosen (Search, Show, Update via Request Body)
-        Route::post('dosen/search', [\App\Http\Controllers\Api\Divisi\DosenController::class, 'search']);
+        // Dosen (List/Search, Show, Update)
+        Route::get('dosen', [\App\Http\Controllers\Api\Divisi\DosenController::class, 'search']);
+        Route::post('dosen/show', [\App\Http\Controllers\Api\Divisi\DosenController::class, 'show']);
         Route::post('dosen-show', [\App\Http\Controllers\Api\Divisi\DosenController::class, 'show']);
+        Route::put('dosen/update', [\App\Http\Controllers\Api\Divisi\DosenController::class, 'update']);
+        Route::post('dosen/update', [\App\Http\Controllers\Api\Divisi\DosenController::class, 'update']);
         Route::put('update-dosen', [\App\Http\Controllers\Api\Divisi\DosenController::class, 'update']);
         Route::post('update-dosen', [\App\Http\Controllers\Api\Divisi\DosenController::class, 'update']);
 

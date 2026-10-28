@@ -20,9 +20,8 @@ Route::prefix('api/v1/divisi')->middleware(['log.divisi', 'log.json:divisi'])->g
         Route::get('tahun-akademik/find', [UniversalController::class, 'tahunAkademikByKode']);
         Route::get('program-studi', [UniversalController::class, 'program_studi']);
 
-        // dosen endpoints (request body, no url params)
-        Route::post('dosen/search', [DosenController::class, 'search']);
-        Route::post('get-dosen', [DosenController::class, 'search']);
+        // dosen endpoints
+        Route::get('dosen', [DosenController::class, 'search']);
         Route::post('dosen/show', [DosenController::class, 'show']);
         Route::post('dosen-show', [DosenController::class, 'show']);
         Route::put('update-dosen', [DosenController::class, 'update']);

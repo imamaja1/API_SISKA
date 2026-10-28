@@ -45,10 +45,10 @@ beforeEach(function () {
     });
 });
 
-it('can search dosen by nik and nama via request body', function () {
+it('can get and filter dosen list via get request', function () {
     $staff = Pengguna::create([
         'nama_pengguna' => 'Staf Akademik',
-        'nama_login' => 'staf_akademik',
+        'nama_login' => 'staf_akademik_get',
         'id_role' => 14,
     ]);
 
@@ -66,16 +66,22 @@ it('can search dosen by nik and nama via request body', function () {
         'status_dosen' => 'A',
     ]);
 
+    // Test with query params filter
     $response = $this->actingAs($staff, 'auth_divisi_siska')
-        ->postJson('/api/v1/divisi/dosen/search', [
-            'nik' => '320112',
-            'nama' => 'Budi',
-        ]);
+        ->getJson('/api/v1/divisi/dosen?nik=320112&nama=Budi');
 
     $response->assertStatus(200)
         ->assertJsonPath('status', 'success')
         ->assertJsonCount(1, 'data.data')
         ->assertJsonPath('data.data.0.nama_dosen', 'Dr. Budi Santoso, M.Kom');
+
+    // Test get all without params
+    $resAll = $this->actingAs($staff, 'auth_divisi_siska')
+        ->getJson('/api/v1/divisi/dosen');
+
+    $resAll->assertStatus(200)
+        ->assertJsonPath('status', 'success')
+        ->assertJsonCount(2, 'data.data');
 });
 
 it('can show dosen detail by encrypted kode_dosen in body', function () {
